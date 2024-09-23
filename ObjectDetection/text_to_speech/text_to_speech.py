@@ -19,11 +19,8 @@ class TextToSpeech:
     def _initialize_background_worker(self):
         Thread(target=self._process_queue, daemon=True).start()
 
-    def speak(self, text, confidence):
-        current_time = time.time()
-        if confidence >= 0.5 and text != self.last_class_spoken and (
-                current_time - self.last_spoken_time) >= self.speak_cooldown:
-            self.queue.put(text)
+    def speak(self, text):
+        self.queue.put(text)
 
     def _process_queue(self):
         while True:

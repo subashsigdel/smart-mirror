@@ -9,7 +9,7 @@ class MayaApp:
     def __init__(self, model_path):
         self.object_detector = ObjectDetector(model_path)
         self.tts = TextToSpeech()
-        self.video_capture = VideoCapture()
+        self.video_capture = VideoCapture(2)
         self.frame_count = 0
         self.cooldown_duration = 5
         self.last_spoken_time = 0
@@ -27,7 +27,7 @@ class MayaApp:
                     if conf >= 0.5 and class_name != self.last_spoken_text:
                         current_time = time.time()
                         if current_time - self.last_spoken_time >= self.cooldown_duration:
-                            self.tts.speak(class_name, conf)
+                            self.tts.speak(class_name)
                             self.last_spoken_time = current_time
                             self.last_spoken_text = class_name
 
