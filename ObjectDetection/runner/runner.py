@@ -9,11 +9,15 @@ class MayaApp:
     def __init__(self, model_path):
         self.object_detector = ObjectDetector(model_path)
         self.tts = TextToSpeech()
-        self.video_capture = VideoCapture(2)
+        self.video_capture = VideoCapture(3)
         self.frame_count = 0
         self.cooldown_duration = 5
         self.last_spoken_time = 0
         self.last_spoken_text = None
+        self.excluded_class = ["toilet"]
+        self.week_classe = ["person", "cat", "donut", "pizza"]
+        self.sleep_time = None
+        self.last_spoken_count: int = 0
 
     def run(self):
         while True:
@@ -24,7 +28,14 @@ class MayaApp:
             if self.frame_count % self.object_detector.frame_skip == 0:
                 detected_classes = self.object_detector.detect_objects(frame)
                 for class_name, conf in detected_classes:
-                    if conf >= 0.5 and class_name != self.last_spoken_text:
+                    if class_name in self.excluded_class:
+                        continue
+                    class_name = "monitor" if class_name == "tv" else class_name
+                    # if class_name in self.week_classe and not conf >= 0.7:
+                    #     continue
+                    if conf >= 0.75 and self.last_spoken_count < 10:
+                        if self.last_spoken_text == class_name:
+                            self.last_spoken_count += 1
                         current_time = time.time()
                         if current_time - self.last_spoken_time >= self.cooldown_duration:
                             self.tts.speak(class_name)
