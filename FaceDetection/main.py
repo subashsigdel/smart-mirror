@@ -1,6 +1,7 @@
-from runner.runner import MainRunner
+# main.py
 
+from runner.runner import Runner
 
 if __name__ == "__main__":
-    runner = MainRunner()
+    runner = Runner()
     runner.run()
