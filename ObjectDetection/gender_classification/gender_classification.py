@@ -6,8 +6,8 @@ class GenderDetector:
         self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
         # Specify the correct paths to the configuration and weights files
-        config_file = '/home/ram/PycharmProjects/object_detection/smart-mirror/ObjectDetection/gender_classification/gender_deploy.prototxt'
-        weights_file = '/home/ram/PycharmProjects/object_detection/smart-mirror/ObjectDetection/gender_classification/gender_net.caffemodel'
+        config_file = '/home/hitech/smart-mirror/ObjectDetection/gender_classification/gender_deploy.prototxt'
+        weights_file = '/home/hitech/smart-mirror/ObjectDetection/gender_classification/gender_net.caffemodel'
 
         # Ensure these files exist in your directory
         if not os.path.isfile(config_file) or not os.path.isfile(weights_file):
