@@ -2,10 +2,8 @@
 
 import os
 import csv
-import cv2
 import numpy as np
 import face_recognition
-
 
 class FaceCapture:
     def __init__(self, csv_filename='facedetails.csv'):
@@ -31,6 +29,7 @@ class FaceCapture:
         return known_face_encodings, known_face_names
 
     def process_frame(self, frame):
+        # Resize frame of video to 1/4 size for faster face recognition processing
         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
 
@@ -41,6 +40,7 @@ class FaceCapture:
             matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
             name = "Unknown"
 
+            # Use the known face with the smallest distance to the new face
             face_distances = face_recognition.face_distance(self.known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:

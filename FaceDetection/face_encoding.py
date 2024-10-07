@@ -1,4 +1,4 @@
-import face_recognition
+import face_recognizer
 import os
 import csv
 import numpy as np
@@ -36,10 +36,10 @@ def append_face_encodings_to_csv(image_folder, csv_filename):
 
             # Load the image file
             image_path = os.path.join(image_folder, filename)
-            image = face_recognition.load_image_file(image_path)
+            image = face_recognizer.load_image_file(image_path)
 
             # Get face encodings
-            face_encodings = face_recognition.face_encodings(image)
+            face_encodings = face_recognizer.face_encodings(image)
 
             # Check if a face was found
             if len(face_encodings) > 0:
