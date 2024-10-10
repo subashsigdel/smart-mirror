@@ -1,65 +1,48 @@
-# importing OpenCV library 
 import cv2
 from gtts import gTTS
 from playsound import playsound
 import os
 import speech_recognition as sr
 
-
-
 def newperson(frame):
-    
     def ask_name():
-        # Create a text-to-speech object
-        tts = gTTS(text=f"तपाईको नाम के हो ?", lang='ne',tld='co.in',slow=False)
-        # Save the audio file
+        """Uses text-to-speech to ask for the person's name in Nepali."""
+        tts = gTTS(text="तपाईको नाम के हो ?", lang='ne', tld='co.in', slow=False)
         audio_file = "output.mp3"
         tts.save(audio_file)
-        # Play the audio file
         playsound(audio_file)
-        # Remove the audio file after playing
         os.remove(audio_file)
 
-    ask_name()
-
-
     def name_input(max_retries=2, timeout=30):
-        # Initialize recognizer
+        """Listens for the user's name using speech recognition."""
         recognizer = sr.Recognizer()
 
         for attempt in range(max_retries + 1):
-            # Capture audio from the microphone
             with sr.Microphone() as source:
                 print(f"Attempt {attempt + 1}: Listening in Nepali...")
-
+                recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
                 try:
-                    # Adjust for ambient noise and listen with a timeout
-                    recognizer.adjust_for_ambient_noise(source)
-                    audio = recognizer.listen(source, timeout=timeout)
-
-                    # Recognize the speech in Nepali using Google Web Speech API
-                    name = recognizer.recognize_google(audio, language="ne-NP")
+                    audio = recognizer.listen(source, timeout=timeout)  # Listen for audio
+                    name = recognizer.recognize_google(audio, language="ne-NP")  # Recognize speech
                     print(f"Recognized Name: {name}")
-                    return name  # If successful, return the recognized name
-
+                    return name  # Return the recognized name
                 except sr.UnknownValueError:
                     print("Could not understand the audio, please say it again.")
-
                 except sr.WaitTimeoutError:
                     print("Listening timed out, please try saying your name again.")
-
                 except sr.RequestError:
                     print("Request failed; check your internet connection.")
-                    break  # If there's a connection issue, break out of the loop
+                    break  # Exit if there's a connection issue
 
-        # If no valid name is recognized after all attempts
         print("Failed to recognize after several attempts.")
-        return name
-        
+        return None  # Return None if name recognition failed
 
+    ask_name()
 
-
-
-    
-    cv2.imwrite(f"testimage/{name_input()}.png", frame)
- 
+    name = name_input()
+    if name:  # Check if a name was successfully recognized
+        # Save the image with the recognized name
+        cv2.imwrite(f"testimage/{name}.png", frame)
+        print(f"Image saved as: testimage/{name}.png")
+    else:
+        print("Image not saved due to name recognition failure.")

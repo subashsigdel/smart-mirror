@@ -1,14 +1,15 @@
-import face_recognition
+import face_recognizer
 import cv2
 import numpy as np
 from gtts import gTTS
 from playsound import playsound
 import os
 from new_person import newperson
-from face_encoding import append_face_encodings_to_csv,load_face_encodings_from_csv
+from face_encoding import append_face_encodings_to_csv, load_face_encodings_from_csv
 
 # Get a reference to webcam #0 (the default one)
 video_capture = cv2.VideoCapture(0)
+
 
 def greet_person(name):
     # Create a text-to-speech object
@@ -21,6 +22,7 @@ def greet_person(name):
     # Remove the audio file after playing
     os.remove(audio_file)
 
+
 # Initialize variables
 face_locations = []
 face_encodings = []
@@ -30,7 +32,7 @@ greeted_names = set()  # Set to keep track of greeted names
 
 # Static bounding box for face alignment (in the middle of the screen)
 static_box_start = (150, 100)  # top-left corner of the static bounding box
-static_box_end = (450, 400)    # bottom-right corner of the static bounding box
+static_box_end = (450, 400)  # bottom-right corner of the static bounding box
 
 while True:
     # Grab a single frame of video
@@ -48,8 +50,8 @@ while True:
         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
 
         # Find all the faces and face encodings in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_small_frame)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+        face_locations = face_recognizer.face_locations(rgb_small_frame)
+        face_encodings = face_recognizer.face_encodings(rgb_small_frame, face_locations)
 
         face_names = []
         for face_encoding, face_location in zip(face_encodings, face_locations):
@@ -57,11 +59,11 @@ while True:
             top, right, bottom, left = [v * 4 for v in face_location]
             known_face_encodings, known_face_names = load_face_encodings_from_csv('facedetails.csv')
             # See if the face is a match for the known face(s)
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            matches = face_recognizer.compare_faces(known_face_encodings, face_encoding)
             name = "Unknown"
 
             # Use the known face with the smallest distance to the new face
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+            face_distances = face_recognizer.face_distance(known_face_encodings, face_encoding)
             best_match_index = np.argmin(face_distances)
             if matches[best_match_index]:
                 name = known_face_names[best_match_index]
@@ -69,9 +71,9 @@ while True:
             face_names.append(name)
 
             # Check if the face is inside the static bounding box
-            if (left > static_box_start[0] and right < static_box_end[0] and 
-                top > static_box_start[1] and bottom < static_box_end[1]):
-                
+            if (left > static_box_start[0] and right < static_box_end[0] and
+                    top > static_box_start[1] and bottom < static_box_end[1]):
+
                 if name == "Unknown":
                     # Capture the image and save it for a new person
                     newperson(frame)  # Custom function to handle new person
