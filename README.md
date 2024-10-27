@@ -1,5 +1,3 @@
-# smart-mirror
-
 Module.register("youtube_slideshow", {
   defaults: {
     videoIDs: ["dQw4w9WgXcQ", "kJQP7kiw5Fk", "G_wOFcCAvis0"],
@@ -12,7 +10,6 @@ Module.register("youtube_slideshow", {
   start: function () {
     this.currentVideoIndex = 0;
     this.isShowingVideo = false;
-    this.videoPlayer = null;
     this.videoTimes = new Array(this.config.videoIDs.length).fill(0);
 
     this.registerKeyEvents();
@@ -31,9 +28,9 @@ Module.register("youtube_slideshow", {
   startVideoPlayback: function () {
     if (!this.isShowingVideo) {
       this.isShowingVideo = true;
+      this.updateDom(); // Render the iframe
       this.scheduleVideoUpdate();
       this.scheduleMagicMirrorUpdate();
-      this.updateDom();
     }
   },
 
@@ -42,11 +39,9 @@ Module.register("youtube_slideshow", {
       clearInterval(this.videoUpdateInterval);
       clearInterval(this.magicMirrorUpdateInterval);
       this.isShowingVideo = false;
-      this.videoPlayer = null; // Clear the video player instance
+      
       this.currentVideoIndex = 0; // Reset to the first video
-
-      this.updateDom(); // This removes the iframe by re-rendering the DOM without it
-      this.hide(); // Hide the module
+      this.updateDom(); // Clear the iframe from the DOM
     }
   },
 
@@ -63,9 +58,8 @@ Module.register("youtube_slideshow", {
       iframe.style.width = "100vw";
       iframe.style.height = "100vh";
       iframe.src = `https://www.youtube.com/embed/${videoID}?autoplay=1&mute=${this.config.mute ? 1 : 0}&controls=0&rel=0`;
-      iframe.frameborder = "0";
-      iframe.allow =
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+      iframe.frameBorder = "0";
+      iframe.allow = "autoplay; encrypted-media";
       iframe.allowFullscreen = true;
 
       wrapper.appendChild(iframe);
@@ -75,31 +69,22 @@ Module.register("youtube_slideshow", {
   },
 
   scheduleVideoUpdate: function () {
+    clearInterval(this.videoUpdateInterval); // Clear any existing interval
     this.videoUpdateInterval = setInterval(() => {
-      if (this.videoPlayer) {
-        this.videoTimes[this.currentVideoIndex] = this.videoPlayer.getCurrentTime();
-      }
-
       this.currentVideoIndex = (this.currentVideoIndex + 1) % this.config.videoIDs.length;
-      this.updateDom();
+      this.updateDom(); // Update DOM to show the next video
     }, this.config.videoDuration);
   },
 
   scheduleMagicMirrorUpdate: function () {
+    clearInterval(this.magicMirrorUpdateInterval); // Clear any existing interval
     this.magicMirrorUpdateInterval = setInterval(() => {
       if (this.isShowingVideo) {
         this.isShowingVideo = false;
-        this.hide();
+        this.updateDom(); // Clear the iframe from the DOM
       } else {
         this.isShowingVideo = true;
-        this.show();
-
-        if (this.videoPlayer) {
-          this.videoPlayer.loadVideoById(this.config.videoIDs[this.currentVideoIndex]);
-          this.videoPlayer.seekTo(this.videoTimes[this.currentVideoIndex]);
-        }
-
-        this.updateDom();
+        this.updateDom(); // Update DOM to recreate iframe
       }
     }, this.config.magicMirrorDuration);
   },
