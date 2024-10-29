@@ -1,92 +1,195 @@
-Module.register("youtube_slideshow", {
-  defaults: {
-    videoIDs: ["dQw4w9WgXcQ", "kJQP7kiw5Fk", "G_wOFcCAvis0"],
-    videoDuration: 60 * 1000,
-    magicMirrorDuration: 30 * 1000,
-    autoplay: false,
-    mute: false,
-  },
+Module.register("MMM-FaceRecognition", {
+    defaults: {},
 
-  start: function () {
-    this.currentVideoIndex = 0;
-    this.isShowingVideo = false;
-    this.videoTimes = new Array(this.config.videoIDs.length).fill(0);
+    start: function() {
+        console.log("MMM-FaceRecognition: Starting module");
+        document.addEventListener('keydown', this.handleKeyPress.bind(this)); // Bind the event listener
+    },
 
-    this.registerKeyEvents();
-  },
+    getDom: function() {
+        const wrapper = document.createElement("div");
+    
+        // Clear previous content (if necessary) and set styles if needed
+        wrapper.style.fontSize = "16px"; // Example style, adjust as needed
+        wrapper.style.color = "white"; // Change text color if needed
+        wrapper.style.padding = "10px"; // Add padding for better readability
+    
+        // Create message elements
+        const message1 = document.createElement("div");
+        message1.textContent = "Press 's' to run the face recognition script.";
+        
+        const message2 = document.createElement("div");
+        message2.textContent = "Press 'o' to run another face recognition script.";
 
-  registerKeyEvents: function () {
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "p") {
-        this.startVideoPlayback();
-      } else if (event.key === "q") {
-        this.stopVideoPlayback();
-      }
-    });
-  },
+        const message3 = document.createElement("div");
+        message2.textContent = "Press 'p' to run another face recognition script.";
+    
+        // Append messages to the wrapper
+        wrapper.appendChild(message1);
+        wrapper.appendChild(message2);
+        wrapper.appendChild(message3);
+    
+        return wrapper;
+    },
 
-  startVideoPlayback: function () {
-    if (!this.isShowingVideo) {
-      this.isShowingVideo = true;
-      this.updateDom(); // Render the iframe
-      this.scheduleVideoUpdate();
-      this.scheduleMagicMirrorUpdate();
-    }
-  },
+    handleKeyPress: function(event) {
+        console.log(`Key pressed: ${event.key}`); // Log the key pressed
+        if (event.key === "s") { // If "s" is pressed
+            this.runFaceRecognitionScript(); // Call the function to run the face recognition script
+            this.hideMirror();
+        }
+        if (event.key === "o") { // If "s" is pressed
+            this.runobjectdetectionScript(); // Call the function to run the face recognition script
+            this.hideMirror();
+        }
+    },
 
-  stopVideoPlayback: function () {
-    if (this.isShowingVideo) {
-      clearInterval(this.videoUpdateInterval);
-      clearInterval(this.magicMirrorUpdateInterval);
-      this.isShowingVideo = false;
-      
-      this.currentVideoIndex = 0; // Reset to the first video
-      this.updateDom(); // Clear the iframe from the DOM
-    }
-  },
+    runFaceRecognitionScript: function() {
+        // Hide the MagicMirror screen
+        this.hideMirror();
 
-  getDom: function () {
-    const wrapper = document.createElement("div");
+        // Send a notification to the Node helper to run the Python script
+        this.sendSocketNotification('RUN_SCRIPT');
+    },
+    runobjectdetectionScript: function() {
+        // Hide the MagicMirror screen
+        this.hideMirror();
 
-    if (this.isShowingVideo) {
-      const videoID = this.config.videoIDs[this.currentVideoIndex];
-      const iframe = document.createElement("iframe");
+        // Send a notification to the Node helper to run the Python script
+        this.sendSocketNotification('RUN_SCRIPT2');
+    },
 
-      iframe.style.position = "absolute";
-      iframe.style.top = "0";
-      iframe.style.left = "0";
-      iframe.style.width = "100vw";
-      iframe.style.height = "100vh";
-      iframe.src = `https://www.youtube.com/embed/${videoID}?autoplay=1&mute=${this.config.mute ? 1 : 0}&controls=0&rel=0`;
-      iframe.frameBorder = "0";
-      iframe.allow = "autoplay; encrypted-media";
-      iframe.allowFullscreen = true;
 
-      wrapper.appendChild(iframe);
-    }
+    hideMirror: function() {
+        const mirrorContainer = document.querySelector(".mirror-container");
+        if (mirrorContainer) {
+            mirrorContainer.style.display = "none"; // Hide the mirror container
+            console.log("Mirror hidden."); // Log when the mirror is hidden
+        }
+    },
 
-    return wrapper;
-  },
+    showMirror: function() {
+        const mirrorContainer = document.querySelector(".mirror-container");
+        if (mirrorContainer) {
+            mirrorContainer.style.display = "block"; // Show the mirror container
+            console.log("Mirror shown."); // Log when the mirror is shown
+        }
+    },
 
-  scheduleVideoUpdate: function () {
-    clearInterval(this.videoUpdateInterval); // Clear any existing interval
-    this.videoUpdateInterval = setInterval(() => {
-      this.currentVideoIndex = (this.currentVideoIndex + 1) % this.config.videoIDs.length;
-      this.updateDom(); // Update DOM to show the next video
-    }, this.config.videoDuration);
-  },
-
-  scheduleMagicMirrorUpdate: function () {
-    clearInterval(this.magicMirrorUpdateInterval); // Clear any existing interval
-    this.magicMirrorUpdateInterval = setInterval(() => {
-      if (this.isShowingVideo) {
-        this.isShowingVideo = false;
-        this.updateDom(); // Clear the iframe from the DOM
-      } else {
-        this.isShowingVideo = true;
-        this.updateDom(); // Update DOM to recreate iframe
-      }
-    }, this.config.magicMirrorDuration);
-  },
+    socketNotificationReceived: function(notification, payload) {
+        if (notification === 'SCRIPT_COMPLETED') {
+            // Show the MagicMirror screen again
+            this.showMirror();
+        }
+    },
 });
+
+
+// Module.register("MMM-FaceRecognition", {
+//     defaults: {
+//         wsUrl: "ws://localhost:8888" // WebSocket server address (Python script WebSocket server)
+//     },
+
+//     start: function() {
+//         console.log("MMM-FaceRecognition: Starting module");
+//         document.addEventListener('keydown', this.handleKeyPress.bind(this)); // Bind the event listener
+//         this.connectWebSocket(); // Establish WebSocket connection
+//     },
+
+//     getDom: function() {
+//         const wrapper = document.createElement("div");
+//         wrapper.innerHTML = `
+//             <p>Press 's' to run the face recognition script.</p>
+//             <div id="video-container" style="display:none;">
+//                 <img id="video-feed" style="width:100%;height:auto;"/>
+//             </div>
+//         `;
+//         return wrapper;
+//     },
+
+//     handleKeyPress: function(event) {
+//         console.log(`Key pressed: ${event.key}`); // Log the key pressed
+//         if (event.key === "s") { // If "s" is pressed
+//             this.runFaceRecognitionScript(); // Call the function to run the face recognition script
+//         }
+//     },
+
+//     runFaceRecognitionScript: function() {
+//         // Hide the MagicMirror screen and show the video feed
+//         this.hideMirror();
+//         this.showVideoFeed();
+
+//         // Send a notification to the Node helper to run the Python script
+//         this.sendSocketNotification('RUN_SCRIPT');
+//     },
+
+//     hideMirror: function() {
+//         const mirrorContainer = document.querySelector(".mirror-container");
+//         if (mirrorContainer) {
+//             mirrorContainer.style.display = "none"; // Hide the mirror container
+//             console.log("Mirror hidden."); // Log when the mirror is hidden
+//         }
+//     },
+
+//     showMirror: function() {
+//         const mirrorContainer = document.querySelector(".mirror-container");
+//         if (mirrorContainer) {
+//             mirrorContainer.style.display = "block"; // Show the mirror container
+//             console.log("Mirror shown."); // Log when the mirror is shown
+//         }
+
+//         // Hide the video feed when showing the mirror again
+//         this.hideVideoFeed();
+//     },
+
+//     showVideoFeed: function() {
+//         const videoContainer = document.getElementById("video-container");
+//         if (videoContainer) {
+//             videoContainer.style.display = "block"; // Show the video feed
+//             console.log("Video feed shown.");
+//         }
+//     },
+
+//     hideVideoFeed: function() {
+//         const videoContainer = document.getElementById("video-container");
+//         if (videoContainer) {
+//             videoContainer.style.display = "none"; // Hide the video feed
+//             console.log("Video feed hidden.");
+//         }
+//     },
+
+//     connectWebSocket: function() {
+//         const socket = new WebSocket(this.config.wsUrl);
+
+//         // Event listener for WebSocket open event
+//         socket.onopen = () => {
+//             console.log("WebSocket connection established.");
+//         };
+
+//         // Event listener for WebSocket message event (receiving the video frame)
+//         socket.onmessage = (event) => {
+//             const imageElement = document.getElementById("video-feed");
+//             if (imageElement) {
+//                 imageElement.src = `data:image/jpeg;base64,${event.data}`; // Set the received base64 image as source
+//             }
+//         };
+
+//         // Event listener for WebSocket close event
+//         socket.onclose = () => {
+//             console.log("WebSocket connection closed.");
+//         };
+
+//         // Event listener for WebSocket error event
+//         socket.onerror = (error) => {
+//             console.error("WebSocket error:", error);
+//         };
+//     },
+
+//     socketNotificationReceived: function(notification, payload) {
+//         if (notification === 'SCRIPT_COMPLETED') {
+//             // Show the MagicMirror screen again after the script completes
+//             this.showMirror();
+//         }
+//     },
+// });
 
