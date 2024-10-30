@@ -1,3 +1,4 @@
+https://github.com/hitechpioneer/magicmirrorlast
 Module.register("MMM-FaceRecognition", {
     defaults: {},
 
