@@ -1,4 +1,5 @@
 https://github.com/hitechpioneer/magicmirrorlast
+https://drive.google.com/drive/folders/1aKjR1_Qw5MMwcisAv9zp1iW-uAtFy7ID?usp=sharing
 Module.register("MMM-FaceRecognition", {
     defaults: {},
 
