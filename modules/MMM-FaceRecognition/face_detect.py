@@ -7,7 +7,7 @@ import numpy as np
 from gtts import gTTS
 from playsound import playsound
 from face_encoding import append_face_encodings_to_csv, load_face_encodings_from_csv
-from new_person import newperson
+from new_person import new_person
 
 # Constants
 CSV_FILENAME: str = 'modules/MMM-FaceRecognition/facedetails.csv'
@@ -74,7 +74,7 @@ def process_batch(
                     STATIC_BOX_START[1] < face_location[0] < STATIC_BOX_END[1]):
 
                 if name == "Unknown":
-                    newperson(frame)
+                    new_person(frame)
                     append_face_encodings_to_csv(image_folder='modules/MMM-FaceRecognition/testimage',
                                                  csv_filename=CSV_FILENAME)
                     known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
