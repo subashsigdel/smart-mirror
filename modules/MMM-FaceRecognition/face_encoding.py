@@ -1,100 +1,83 @@
-import face_recognition
 import os
 import csv
+import face_recognition
+import numpy as np
+from typing import List, Tuple
 
-def append_face_encodings_to_csv(image_folder, csv_filename):
-    # List to store encodings and names for new images
-    face_data = []
 
-    # Get the names of already encoded people from the CSV
-    existing_names = set()
+def append_face_encodings_to_csv(image_folder: str, csv_filename: str) -> None:
+    """
+    Append new face encodings from images in a folder to a CSV file.
+
+    Args:
+        image_folder (str): Path to the folder containing images.
+        csv_filename (str): Path to the CSV file to store face encodings.
+    """
+    face_data: List[List] = []
+
+    existing_names: set = set()
     if os.path.exists(csv_filename):
         with open(csv_filename, mode="r") as file:
             reader = csv.reader(file)
-            try:
-                # Try to skip the header row
-                next(reader)
-            except StopIteration:
-                # If the file is empty, do nothing
-                print(f"{csv_filename} is empty, starting fresh.")
-            else:
-                # Read all existing names
-                for row in reader:
-                    existing_names.add(row[0])  # The name is the first column
+            header = next(reader, None)
+            for row in reader:
+                existing_names.add(row[0])
 
-    # Loop through each image in the folder
     for filename in os.listdir(image_folder):
-        if filename.endswith(".jpeg") or filename.endswith(".jpg") or filename.endswith(".png"):
-            # Get the person's name from the file name (without extension)
+        if filename.lower().endswith((".jpeg", ".jpg", ".png")):
             person_name = os.path.splitext(filename)[0]
-            print(person_name)
+            print(f"Processing {person_name}...")
 
-            # Skip if the name already exists in the CSV
             if person_name in existing_names:
                 print(f"Skipping {person_name}, already encoded.")
                 continue
 
-            # Load the image file
             image_path = os.path.join(image_folder, filename)
             image = face_recognition.load_image_file(image_path)
 
-            # Get face encodings
             face_encodings = face_recognition.face_encodings(image)
 
-            # Check if a face was found
-            if len(face_encodings) > 0:
-                # Use the first face encoding
+            if face_encodings:
                 face_encoding = face_encodings[0]
 
-                # Append the name and encoding to the list
                 face_data.append([person_name] + face_encoding.tolist())
                 print(f"Encoded and added {person_name}")
 
-    # Append the new face data to the existing CSV file
-    with open(csv_filename, mode="a", newline="") as file:
-        writer = csv.writer(file)
-        # Write the header row if the file is empty
-        if os.stat(csv_filename).st_size == 0:
-            writer.writerow(["Name"] + [f"Encoding_{i+1}" for i in range(128)])  # Header
-        # Write each new person's name and encodings
-        writer.writerows(face_data)
-
     if face_data:
+        with open(csv_filename, mode="a", newline="") as file:
+            writer = csv.writer(file)
+            if os.stat(csv_filename).st_size == 0:
+                writer.writerow(["Name"] + [f"Encoding_{i+1}" for i in range(128)])  # Header
+            writer.writerows(face_data)
+
         print(f"New face encodings appended to {csv_filename}")
     else:
         print("No new face encodings to add.")
 
-# Example usage:
-image_folder = "modules/MMM-FaceRecognition/testimage"
-csv_filename = "modules/MMM-FaceRecognition/facedetails.csv"
-append_face_encodings_to_csv(image_folder, csv_filename)
 
+def load_face_encodings_from_csv(csv_filename: str) -> Tuple[List[np.ndarray], List[str]]:
+    """
+    Load face encodings and names from a CSV file.
 
+    Args:
+        csv_filename (str): Path to the CSV file containing face encodings.
 
-import csv
-import numpy as np
-
-def load_face_encodings_from_csv(csv_filename):
-    known_face_encodings = []
-    known_face_names = []
+    Returns:
+        Tuple[List[np.ndarray], List[str]]: Lists of known face encodings and names.
+    """
+    known_face_encodings: List[np.ndarray] = []
+    known_face_names: List[str] = []
 
     if os.path.exists(csv_filename):
         with open(csv_filename, mode="r") as file:
             reader = csv.reader(file)
-            header = next(reader)  # Skip the header row
+            next(reader)
 
             for row in reader:
                 name = row[0]
-                encoding = list(map(float, row[1:]))  # Convert all encoding values to float
+                encoding = np.array(list(map(float, row[1:])), dtype=np.float32)
 
                 known_face_names.append(name)
-                known_face_encodings.append(np.array(encoding))
+                known_face_encodings.append(encoding)
 
     return known_face_encodings, known_face_names
-
-# Example usage
-csv_filename = "modules/MMM-FaceRecognition/facedetails.csv"
-known_face_encodings, known_face_names = load_face_encodings_from_csv(csv_filename)
-
-print("Known face names:", known_face_names)
-print("Number of known face encodings:", known_face_encodings)

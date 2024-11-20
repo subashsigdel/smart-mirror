@@ -1,244 +1,132 @@
-# import face_recognition
-# import cv2
-# import numpy as np
-# from gtts import gTTS
-# from playsound import playsound
-# import os
-# import time
-# from new_person import newperson
-# from face_encoding import append_face_encodings_to_csv, load_face_encodings_from_csv
-# csv_filename = 'modules/MMM-FaceRecognition/facedetails.csv'
-# known_face_encodings, known_face_names = load_face_encodings_from_csv(csv_filename)
-# # Get a reference to webcam #0 (the default one)
-# # Get a reference to webcam #0 (the default one)
-# video_capture = cv2.VideoCapture(0)
-
-# def greet_person(name):
-#     base_name = name.split('-')[0]
-#     # Create a text-to-speech object
-#     tts = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
-#     # Save the audio file
-#     audio_file = "output.mp3"
-#     tts.save(audio_file)
-#     # Play the audio file
-#     playsound(audio_file)
-#     # Remove the audio file after playing
-#     os.remove(audio_file)
-
-# # Initialize variables
-# face_locations = []
-# face_encodings = []
-# face_names = []
-# process_this_frame = True
-# greeted_names = set()  # Set to keep track of greeted names
-
-# # Static bounding box for face alignment (in the middle of the screen)
-# static_box_start = (150, 100)  # top-left corner of the static bounding box
-# static_box_end = (450, 400)    # bottom-right corner of the static bounding box
-
-# # Initialize a timer
-# last_reset_time = time.time()  # Get the current time
-# reset_interval = 3600  # Set the reset interval to 1 hour (3600 seconds)
-#  # Create a window for displaying video
-# # cv2.namedWindow('Video', cv2.WND_PROP_FULLSCREEN)
-# # cv2.setWindowProperty('Video', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
-# while True:
-#      # Clear the greeted names every hour
-#     current_time = time.time()
-#     if current_time - last_reset_time >= reset_interval:
-#         greeted_names.clear()  # Clear the greeted names
-#         last_reset_time = current_time  # Reset the timer
-#     # Grab a single frame of video
-#     ret, frame = video_capture.read()
-
-#     # Draw the static bounding box on the frame
-#     cv2.rectangle(frame, static_box_start, static_box_end, (0, 255, 0), 2)
-
-#     # Only process every other frame of video to save time
-#     if process_this_frame:
-#         # Resize frame of video to 1/4 size for faster face recognition processing
-#         small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-
-#         # Convert the image from BGR color (which OpenCV uses) to RGB color (which face_recognition uses)
-#         rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-
-#         # Find all the faces and face encodings in the current frame of video
-#         face_locations = face_recognition.face_locations(rgb_small_frame)
-#         face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
-
-#         face_names = []
-#         for face_encoding, face_location in zip(face_encodings, face_locations):
-#             # Scale up the face location
-#             top, right, bottom, left = [v * 4 for v in face_location]
-
-#             # See if the face is a match for the known face(s)
-#             matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-#             name = "Unknown"
-
-#             # Use the known face with the smallest distance to the new face
-#             face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-#             best_match_index = np.argmin(face_distances)
-#             if matches[best_match_index]:
-#                 name = known_face_names[best_match_index]
-
-#             face_names.append(name)
-
-#             # Check if the face is inside the static bounding box
-#             if (left > static_box_start[0] and right < static_box_end[0] and 
-#                 top > static_box_start[1] and bottom < static_box_end[1]):
-                
-#                 if name == "Unknown":
-#                     # Capture the image and save it for a new person
-#                     newperson(frame)  # Custom function to handle new person
-#                     append_face_encodings_to_csv(image_folder='modules/MMM-FaceRecognition/testimage', csv_filename='facedetails.csv')
-#                     known_face_encodings, known_face_names = load_face_encodings_from_csv('modules/MMM-FaceRecognition/facedetails.csv')
-
-#                 # Greet the detected person if not already greeted
-#                 if name != "Unknown" and name not in greeted_names:
-#                     greet_person(name)
-#                     greeted_names.add(name)  # Add name to the set of greeted names
-
-#     process_this_frame = not process_this_frame
-
-#     # Display the results
-#     for (top, right, bottom, left), name in zip(face_locations, face_names):
-#         # Scale back up face locations since the frame we detected in was scaled to 1/4 size
-#         top *= 4
-#         right *= 4
-#         bottom *= 4
-#         left *= 4
-
-#         # Draw a box around the face
-#         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-
-#         # Optionally, draw the person's name on the screen
-#         cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-#         font = cv2.FONT_HERSHEY_DUPLEX
-#         cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
-
-#     # Display the resulting image
-#     cv2.imshow('Video', frame)
-
-#     # Hit 'q' on the keyboard to quit
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         break
-
-# # Release handle to the webcam
-# video_capture.release()
-# cv2.destroyAllWindows()
-
-import face_recognition
+import os
+import time
+from typing import List, Set, Tuple
 import cv2
+import face_recognition
 import numpy as np
 from gtts import gTTS
 from playsound import playsound
-import os
-import time
-from new_person import newperson
 from face_encoding import append_face_encodings_to_csv, load_face_encodings_from_csv
+from new_person import new_person
 
-csv_filename = 'modules/MMM-FaceRecognition/facedetails.csv'
-known_face_encodings, known_face_names = load_face_encodings_from_csv(csv_filename)
+# Constants
+CSV_FILENAME: str = 'modules/MMM-FaceRecognition/facedetails.csv'
+BATCH_SIZE: int = 5
+RESET_INTERVAL: int = 3600
+STATIC_BOX_START: Tuple[int, int] = (150, 100)
+STATIC_BOX_END: Tuple[int, int] = (450, 400)
 
-video_capture = cv2.VideoCapture(0)
+# Load known face encodings
+known_face_encodings: List[np.ndarray]
+known_face_names: List[str]
+known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
 
-def greet_person(name):
-    base_name = name.split('-')[0]
-    tts = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
-    audio_file = "output.mp3"
-    tts.save(audio_file)
-    playsound(audio_file)
-    os.remove(audio_file)
 
-# Initialize variables
-greeted_names = set()
-static_box_start = (150, 100)
-static_box_end = (450, 400)
-last_reset_time = time.time()
-reset_interval = 3600
-frame_batch = []
-batch_size = 5  # Number of frames to process in one go
+def greet_person(name: str) -> None:
+    """Greets a person by name using text-to-speech."""
+    base_name: str = name.split('-')[0]
+    audio_file: str = "output.mp3"
+    try:
+        tts: gTTS = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
+        tts.save(audio_file)
+        playsound(audio_file)
+    finally:
+        if os.path.exists(audio_file):
+            os.remove(audio_file)
 
-def process_batch(frames, known_face_encodings, known_face_names):
-    global greeted_names
-     
+
+def draw_bounding_box(frame: np.ndarray, face_location: Tuple[int, int, int, int], name: str) -> None:
+    """Draws a bounding box with the person's name on the frame."""
+    top, right, bottom, left = face_location
+    cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+    cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
+    font: int = cv2.FONT_HERSHEY_DUPLEX
+    cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+
+
+def process_batch(
+    frames: List[np.ndarray],
+    greeted_names: Set[str],
+    known_face_encodings: List[np.ndarray],
+    known_face_names: List[str],
+) -> None:
+    """Processes a batch of frames for face recognition and greeting."""
     for frame in frames:
-        # Resize frame for faster processing
-        small_frame = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        rgb_small_frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+        small_frame: np.ndarray = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+        rgb_small_frame: np.ndarray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
 
-        # Detect faces and compute encodings
-        face_locations = face_recognition.face_locations(rgb_small_frame)
-        face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+        face_locations: List[Tuple[int, int, int, int]] = face_recognition.face_locations(rgb_small_frame)
+        face_encodings: List[np.ndarray] = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
-        face_names = []
         for face_encoding, face_location in zip(face_encodings, face_locations):
-            top, right, bottom, left = [v * 4 for v in face_location]
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
-            name = "Unknown"
+            face_location = [v * 4 for v in face_location]  # Scale back to original size
+            matches: List[bool] = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            face_distances: np.ndarray = face_recognition.face_distance(known_face_encodings, face_encoding)
 
-            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
-            best_match_index = np.argmin(face_distances)
-            if matches and matches[best_match_index]:
-                name = known_face_names[best_match_index]
-
-            face_names.append(name)
+            name: str = "Unknown"
+            if matches:
+                best_match_index: int = np.argmin(face_distances)
+                if matches[best_match_index]:
+                    name = known_face_names[best_match_index]
 
             # Check bounding box and greet logic
-            if (left > static_box_start[0] and right < static_box_end[0] and 
-                top > static_box_start[1] and bottom < static_box_end[1]):
-                
-                if name == "Unknown":
-                    newperson(frame)
-                    append_face_encodings_to_csv(image_folder='modules/MMM-FaceRecognition/testimage', 
-                                                 csv_filename='facedetails.csv')
-                    known_face_encodings, known_face_names = load_face_encodings_from_csv(csv_filename)
+            if (STATIC_BOX_START[0] < face_location[3] < STATIC_BOX_END[0] and
+                    STATIC_BOX_START[1] < face_location[0] < STATIC_BOX_END[1]):
 
-                if name != "Unknown" and name not in greeted_names:
+                if name == "Unknown":
+                    new_person(frame)
+                    append_face_encodings_to_csv(image_folder='modules/MMM-FaceRecognition/testimage',
+                                                 csv_filename=CSV_FILENAME)
+                    known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
+
+                elif name not in greeted_names:
                     greet_person(name)
                     greeted_names.add(name)
 
-        # Draw boxes and names
-        for (top, right, bottom, left), name in zip(face_locations, face_names):
-            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-            cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
-            font = cv2.FONT_HERSHEY_DUPLEX
-            cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+            draw_bounding_box(frame, face_location, name)
 
-    return frames
-# Initialize processed_frames to avoid NameError
-processed_frames = []
 
-while True:
-   
-    # Clear greeted names every hour
-    current_time = time.time()
-    if current_time - last_reset_time >= reset_interval:
-        greeted_names.clear()
-        last_reset_time = current_time
+def main() -> None:
+    """Main loop for video capture and face recognition."""
+    global known_face_encodings, known_face_names
 
-    # Capture frame and add to batch
-    ret, frame = video_capture.read()
-    if not ret:
-        break
-    frame_batch.append(frame)
+    greeted_names: Set[str] = set()
+    last_reset_time: float = time.time()
+    video_capture: cv2.VideoCapture = cv2.VideoCapture(0)
+    frame_batch: List[np.ndarray] = []
 
-     # Draw the static bounding box on the frame
-    cv2.rectangle(frame, static_box_start, static_box_end, (0, 255, 0), 2)
+    try:
+        while True:
+            current_time: float = time.time()
+            if current_time - last_reset_time >= RESET_INTERVAL:
+                greeted_names.clear()
+                last_reset_time = current_time
 
-    # Process batch when it reaches batch size
-    if len(frame_batch) == batch_size:
-        processed_frames = process_batch(frame_batch, known_face_encodings, known_face_names)
-        frame_batch = []  # Clear the batch
+            ret: bool
+            frame: np.ndarray
+            ret, frame = video_capture.read()
+            if not ret:
+                break
 
-    # Display the last processed frame
-    if len(processed_frames) > 0:
-        cv2.imshow('Video', processed_frames[-1])
+            frame_batch.append(frame)
+            cv2.rectangle(frame, STATIC_BOX_START, STATIC_BOX_END, (0, 255, 0), 2)
 
-    # Quit with 'q'
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+            if len(frame_batch) == BATCH_SIZE:
+                process_batch(
+                    frame_batch, greeted_names, known_face_encodings, known_face_names
+                )
+                frame_batch = []  # Clear the batch
 
-video_capture.release()
-cv2.destroyAllWindows()
+            # Display the last frame in the batch
+            cv2.imshow('Video', frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+    finally:
+        video_capture.release()
+        cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
