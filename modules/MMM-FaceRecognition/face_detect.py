@@ -44,8 +44,6 @@ def draw_bounding_box(frame: np.ndarray, face_location: Tuple[int, int, int, int
     cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
 
-import time  # Import time module
-
 def process_batch(
     frames: List[np.ndarray],
     greeted_names: Set[str],
@@ -54,7 +52,6 @@ def process_batch(
 ) -> None:
     """Processes a batch of frames for face recognition and greeting."""
     for frame in frames:
-        start_time = time.time()  # Start time for detection
         small_frame: np.ndarray = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
         rgb_small_frame: np.ndarray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
 
@@ -87,11 +84,6 @@ def process_batch(
                     greeted_names.add(name)
 
             draw_bounding_box(frame, face_location, name)
-
-        end_time = time.time()  # End time for detection
-        detection_time = end_time - start_time
-        print(f"Time taken for detection: {detection_time:.4f} seconds")
-
 
 
 def main() -> None:
