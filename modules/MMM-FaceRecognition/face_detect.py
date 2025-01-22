@@ -1,16 +1,16 @@
 import os
 import time
+import pygame
 from typing import List, Set, Tuple
 import cv2
 import face_recognition
 import numpy as np
 from gtts import gTTS
-from playsound import playsound
 from face_encoding import append_face_encodings_to_csv, load_face_encodings_from_csv
 from new_person import new_person
 
 # Constants
-CSV_FILENAME: str = 'modules/MMM-FaceRecognition/facedetails.csv'
+CSV_FILENAME: str = '/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/facedetails.csv'
 BATCH_SIZE: int = 5
 RESET_INTERVAL: int = 3600
 STATIC_BOX_START: Tuple[int, int] = (150, 100)
@@ -21,18 +21,58 @@ known_face_encodings: List[np.ndarray]
 known_face_names: List[str]
 known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
 
-
 def greet_person(name: str) -> None:
     """Greets a person by name using text-to-speech."""
     base_name: str = name.split('-')[0]
     audio_file: str = "output.mp3"
     try:
+        # Start timing text-to-speech
+        start_tts_time = time.time()
+
+        # Generate the speech file
         tts: gTTS = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
         tts.save(audio_file)
-        playsound(audio_file)
+
+        # Initialize pygame mixer
+        pygame.mixer.init()
+
+        # Load and play the audio file asynchronously
+        pygame.mixer.music.load(audio_file)
+        pygame.mixer.music.play()
+
+        # Wait for the audio to finish playing
+        while pygame.mixer.music.get_busy():
+            pygame.time.Clock().tick(10)
+
+        # End timing text-to-speech
+        end_tts_time = time.time()
+        print(f"Text-to-speech and playback for {base_name} took {end_tts_time - start_tts_time:.2f} seconds.")
     finally:
         if os.path.exists(audio_file):
             os.remove(audio_file)
+
+# def greet_person(name: str) -> None:
+#     """Greets a person by name using text-to-speech."""
+#     base_name: str = name.split('-')[0]
+#     audio_file: str = "output.mp3"
+#     try:
+#         # Generate the speech file
+#         tts: gTTS = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
+#         tts.save(audio_file)
+
+#         # Initialize pygame mixer
+#         pygame.mixer.init()
+
+#         # Load and play the audio file asynchronously
+#         pygame.mixer.music.load(audio_file)
+#         pygame.mixer.music.play()
+
+#         # Wait for the audio to finish playing
+#         while pygame.mixer.music.get_busy():
+#             pygame.time.Clock().tick(10)
+#     finally:
+#         if os.path.exists(audio_file):
+#             os.remove(audio_file)
 
 
 def draw_bounding_box(frame: np.ndarray, face_location: Tuple[int, int, int, int], name: str) -> None:
@@ -44,6 +84,48 @@ def draw_bounding_box(frame: np.ndarray, face_location: Tuple[int, int, int, int
     cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
 
 
+# def process_batch(
+#     frames: List[np.ndarray],
+#     greeted_names: Set[str],
+#     known_face_encodings: List[np.ndarray],
+#     known_face_names: List[str],
+# ) -> None:
+#     """Processes a batch of frames for face recognition and greeting."""
+#     for frame in frames:
+#         small_frame: np.ndarray = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
+#         rgb_small_frame: np.ndarray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+
+#         face_locations: List[Tuple[int, int, int, int]] = face_recognition.face_locations(rgb_small_frame)
+#         face_encodings: List[np.ndarray] = face_recognition.face_encodings(rgb_small_frame, face_locations)
+
+#         for face_encoding, face_location in zip(face_encodings, face_locations):
+#             face_location = [v * 4 for v in face_location]  # Scale back to original size
+#             matches: List[bool] = face_recognition.compare_faces(known_face_encodings, face_encoding)
+#             face_distances: np.ndarray = face_recognition.face_distance(known_face_encodings, face_encoding)
+
+#             name: str = "Unknown"
+#             if matches:
+#                 best_match_index: int = np.argmin(face_distances)
+#                 if matches[best_match_index]:
+#                     name = known_face_names[best_match_index]
+
+#             # Check bounding box and greet logic
+#             if (STATIC_BOX_START[0] < face_location[3] < STATIC_BOX_END[0] and
+#                     STATIC_BOX_START[1] < face_location[0] < STATIC_BOX_END[1]):
+
+#                 if name == "Unknown":
+#                     new_person(frame)
+#                     append_face_encodings_to_csv(image_folder='/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/testimage',
+#                                                  csv_filename=CSV_FILENAME)
+#                     known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
+
+#                 elif name not in greeted_names:
+#                     greet_person(name)
+#                     greeted_names.add(name)
+
+#             draw_bounding_box(frame, face_location, name)
+import time  # Ensure this is imported at the top of your file
+
 def process_batch(
     frames: List[np.ndarray],
     greeted_names: Set[str],
@@ -54,6 +136,9 @@ def process_batch(
     for frame in frames:
         small_frame: np.ndarray = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
         rgb_small_frame: np.ndarray = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+
+        # Start timing face recognition
+        start_recognition_time = time.time()
 
         face_locations: List[Tuple[int, int, int, int]] = face_recognition.face_locations(rgb_small_frame)
         face_encodings: List[np.ndarray] = face_recognition.face_encodings(rgb_small_frame, face_locations)
@@ -69,18 +154,27 @@ def process_batch(
                 if matches[best_match_index]:
                     name = known_face_names[best_match_index]
 
+            # End timing face recognition
+            end_recognition_time = time.time()
+            print(f"Face recognition for {name} took {end_recognition_time - start_recognition_time:.2f} seconds.")
+
             # Check bounding box and greet logic
             if (STATIC_BOX_START[0] < face_location[3] < STATIC_BOX_END[0] and
                     STATIC_BOX_START[1] < face_location[0] < STATIC_BOX_END[1]):
 
                 if name == "Unknown":
                     new_person(frame)
-                    append_face_encodings_to_csv(image_folder='modules/MMM-FaceRecognition/testimage',
+                    append_face_encodings_to_csv(image_folder='/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/testimage',
                                                  csv_filename=CSV_FILENAME)
                     known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
 
                 elif name not in greeted_names:
+                    # Start timing greeting
+                    start_greeting_time = time.time()
                     greet_person(name)
+                    end_greeting_time = time.time()
+
+                    print(f"Greeting {name} took {end_greeting_time - start_greeting_time:.2f} seconds.")
                     greeted_names.add(name)
 
             draw_bounding_box(frame, face_location, name)

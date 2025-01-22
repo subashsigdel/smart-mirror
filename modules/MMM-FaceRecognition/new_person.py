@@ -1,21 +1,31 @@
 import os
 import uuid
 from typing import Optional
-
 import cv2
 import speech_recognition as sr
 from gtts import gTTS
-from playsound import playsound
-
+import pygame  # Import pygame for audio playback
 
 def ask_name() -> None:
-    """Plays a prompt asking the user for their name in Nepali."""
+    """Plays a prompt asking the user for their name in Nepali using pygame."""
     audio_file = "output.mp3"
     tts = gTTS(text="तपाईको नाम के हो?", lang="ne", tld="co.in", slow=False)
     tts.save(audio_file)
-    playsound(audio_file)
-    os.remove(audio_file)
 
+    # Initialize pygame mixer
+    pygame.mixer.init()
+
+    # Load and play the audio file asynchronously
+    pygame.mixer.music.load(audio_file)
+    pygame.mixer.music.play()
+
+    # Wait for the audio to finish playing
+    while pygame.mixer.music.get_busy():
+        pygame.time.Clock().tick(10)
+
+    # Clean up the audio file after playback
+    if os.path.exists(audio_file):
+        os.remove(audio_file)
 
 def name_input(max_retries: int = 2, timeout: int = 30) -> Optional[str]:
     """
@@ -67,13 +77,13 @@ def new_person(frame: cv2.Mat) -> None:
     Args:
         frame: The frame (image) to save.
     """
-    ask_name()
-    user_name = name_input()
+    ask_name()  # Ask for the user's name
+    user_name = name_input()  # Capture the name
 
     if user_name:
-        unique_id = uuid.uuid4().hex[:4]
-        file_path = f"modules/MMM-FaceRecognition/testimage/{user_name}-{unique_id}.png"
-        cv2.imwrite(file_path, frame)
+        unique_id = uuid.uuid4().hex[:4]  # Generate a unique ID
+        file_path = f"/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/testimage/{user_name}-{unique_id}.png"
+        cv2.imwrite(file_path, frame)  # Save the image
         print(f"Image saved as {file_path}")
     else:
         print("Could not save the image as no name was provided.")
