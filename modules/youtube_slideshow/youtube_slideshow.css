@@ -1,0 +1,9 @@
+/* youtube_slideshow.css */
+iframe {
+  display: block;
+  width: 100vw; /* Full width of the viewport */
+  height: 100vh; /* Full height of the viewport */
+  border: none;
+  margin: 0;
+  padding: 0;
+}
