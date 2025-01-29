@@ -164,19 +164,22 @@ const errorMessage = document.getElementById('error-message');
 
 // Function to check and request camera permissions
 async function requestCameraPermission() {
-    try {
-        const permissions = await navigator.permissions.query({ name: 'camera' });
-
-        if (permissions.state === 'denied') {
-            throw new Error('Camera access is denied. Please enable permissions in browser settings.');
-        }
-
-        await initCamera(); // If permission is granted, start the camera
-    } catch (error) {
-        console.error(error);
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+    if (location.protocol !== 'https:') {
+        alert('Camera access requires HTTPS. Please use the Ngrok HTTPS URL.');
+        return;
     }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    } catch (error) {
+        console.error('Camera access denied:', error);
+        alert('Camera access denied. Please allow permissions in your browser settings.');
+    }
+}
+
+window.addEventListener('load', requestCameraPermission);
+
 }
 
 // Initialize camera
