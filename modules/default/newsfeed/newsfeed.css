@@ -22,3 +22,7 @@ iframe.newsfeed-fullarticle {
   text-align: justify;
   margin-bottom: 0.5em;
 }
+.newsfeed .medium {
+  font-size: 40px;
+  line-height: 40px;
+}
