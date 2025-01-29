@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Responsive Camera UI</title>
     <style>
         * {
@@ -40,6 +41,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            min-height: 480px;
         }
         #video, #captured-image {
             width: 100%;
@@ -114,13 +116,19 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="camera-container">
         <div class="camera-view">
-            <video id="video" autoplay></video>
+            <video id="video" autoplay playsinline></video>
             <canvas id="canvas" style="display: none;"></canvas>
             <img id="captured-image" style="display:none;">
         </div>
@@ -134,9 +142,10 @@
             <h2>Enter Name</h2>
             <input type="text" id="name-input" placeholder="Enter person's name">
             <button id="save-name">Save</button>
+            <div id="error-message" class="error-message"></div>
         </div>
     </div>
-    
+
     <div id="thank-you-message">
         <h2>Thank You!</h2>
         <p>Your image has been saved.</p>
@@ -151,10 +160,38 @@
         const nameInput = document.getElementById('name-input');
         const saveNameBtn = document.getElementById('save-name');
         const thankYouMessage = document.getElementById('thank-you-message');
+        const errorMessage = document.getElementById('error-message');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => video.srcObject = stream)
-            .catch(error => console.error('Camera access error:', error));
+        // Initialize camera with both front and back camera options
+        async function initCamera() {
+            try {
+                // Try rear camera first
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error('Rear camera error:', error);
+                try {
+                    // Fall back to any available camera
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: true
+                    });
+                    video.srcObject = stream;
+                } catch (fallbackError) {
+                    console.error('Camera access error:', fallbackError);
+                    errorMessage.textContent = 'Camera access denied. Please check permissions.';
+                    errorMessage.style.display = 'block';
+                }
+            }
+        }
+
+        // Start camera when page loads
+        window.addEventListener('load', initCamera);
 
         captureBtn.addEventListener('click', () => {
             const context = canvas.getContext('2d');
@@ -167,30 +204,50 @@
             namePopup.style.display = 'flex';
         });
 
-        saveNameBtn.addEventListener('click', () => {
+        saveNameBtn.addEventListener('click', async () => {
             const name = nameInput.value.trim();
             if (!name) {
-                alert('Please enter a name');
+                errorMessage.textContent = 'Please enter a name';
+                errorMessage.style.display = 'block';
                 return;
             }
 
-            canvas.toBlob(blob => {
+            errorMessage.style.display = 'none';
+
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 const formData = new FormData();
                 formData.append('user_name', name);
                 formData.append('capturedPhoto', blob, `${name}.png`);
 
-                fetch('/', { method: 'POST', body: formData })
-                .then(response => response.text())
-                .then(() => {
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
                     namePopup.style.display = 'none';
                     nameInput.value = '';
                     capturedImage.style.display = 'none';
                     video.style.display = 'block';
                     thankYouMessage.style.display = 'block';
-                    setTimeout(() => thankYouMessage.style.display = 'none', 2000);
-                })
-                .catch(error => console.error('Error:', error));
-            }, 'image/png');
+                    setTimeout(() => {
+                        thankYouMessage.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error || 'Upload failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            }
         });
     </script>
 </body>
