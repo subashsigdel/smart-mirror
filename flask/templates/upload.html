@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Camera UI</title>
+    <title>Camera App</title>
     <style>
         * {
             box-sizing: border-box;
@@ -17,31 +17,22 @@
             align-items: center;
             min-height: 100vh;
             background-color: #f4f4f4;
-            height: 90%;
         }
         .camera-container {
             display: flex;
+            flex-direction: column;
             width: 90%;
-            max-width: 1200px;
+            max-width: 800px;
             background-color: white;
-            border-radius: 30px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        @media (max-width: 768px) {
-            .camera-container {
-                flex-direction: column;
-                max-width: 400px;
-            }
-        }
         .camera-view {
-            flex: 1;
+            width: 100%;
             background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             position: relative;
-            min-height: 480px;
+            min-height: 400px;
         }
         #video, #captured-image {
             width: 100%;
@@ -49,79 +40,49 @@
             object-fit: cover;
         }
         .controls {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
+            text-align: center;
         }
         #capture-btn {
-            width: 80px;
-            height: 80px;
-            background-color: white;
-            border: 6px solid #333;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
+            background-color: white;
+            border: 5px solid #333;
             cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 20px;
+            transition: transform 0.2s;
         }
         #capture-btn:hover {
-            background-color: #f0f0f0;
-            transform: scale(1.05);
+            transform: scale(1.1);
         }
-        #capture-btn:active {
-            transform: scale(0.95);
-        }
-        #name-popup {
+        .popup {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.5);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
         .popup-content {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            width: 300px;
         }
-        #name-input {
-            width: 100%;
+        input, button {
+            margin: 10px;
             padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            width: 200px;
         }
-        #save-name {
+        button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-        }
-        #thank-you-message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .error-message {
-            color: red;
-            margin-top: 10px;
-            display: none;
         }
     </style>
 </head>
@@ -130,124 +91,76 @@
         <div class="camera-view">
             <video id="video" autoplay playsinline></video>
             <canvas id="canvas" style="display: none;"></canvas>
-            <img id="captured-image" style="display:none;">
+            <img id="captured-image" style="display: none;">
         </div>
         <div class="controls">
             <div id="capture-btn"></div>
         </div>
     </div>
 
-    <div id="name-popup">
+    <div id="name-popup" class="popup">
         <div class="popup-content">
             <h2>Enter Name</h2>
-            <input type="text" id="name-input" placeholder="Enter person's name">
-            <button id="save-name">Save</button>
-            <div id="error-message" class="error-message"></div>
+            <input type="text" id="name-input" placeholder="Enter your name">
+            <button id="save-name">Save Photo</button>
         </div>
-    </div>
-
-    <div id="thank-you-message">
-        <h2>Thank You!</h2>
-        <p>Your image has been saved.</p>
     </div>
 
     <script>
         const video = document.getElementById('video');
-        const captureBtn = document.getElementById('capture-btn');
         const canvas = document.getElementById('canvas');
-        const capturedImage = document.getElementById('captured-image');
+        const captureBtn = document.getElementById('capture-btn');
         const namePopup = document.getElementById('name-popup');
         const nameInput = document.getElementById('name-input');
         const saveNameBtn = document.getElementById('save-name');
-        const thankYouMessage = document.getElementById('thank-you-message');
-        const errorMessage = document.getElementById('error-message');
 
-        // Initialize camera with both front and back camera options
-        async function initCamera() {
-            try {
-                // Try rear camera first
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                });
-                video.srcObject = stream;
-            } catch (error) {
-                console.error('Rear camera error:', error);
-                try {
-                    // Fall back to any available camera
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: true
-                    });
-                    video.srcObject = stream;
-                } catch (fallbackError) {
-                    console.error('Camera access error:', fallbackError);
-                    errorMessage.textContent = 'Camera access denied. Please check permissions.';
-                    errorMessage.style.display = 'block';
-                }
+        // Start camera
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             }
-        }
+        })
+        .then(stream => {
+            video.srcObject = stream;
+            return video.play();
+        })
+        .catch(err => console.error('Camera error:', err));
 
-        // Start camera when page loads
-        window.addEventListener('load', initCamera);
-
+        // Capture photo
         captureBtn.addEventListener('click', () => {
-            const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            capturedImage.src = canvas.toDataURL('image/png');
-            video.style.display = 'none';
-            capturedImage.style.display = 'block';
+            canvas.getContext('2d').drawImage(video, 0, 0);
             namePopup.style.display = 'flex';
         });
 
-        saveNameBtn.addEventListener('click', async () => {
+        // Save photo
+        saveNameBtn.addEventListener('click', () => {
             const name = nameInput.value.trim();
             if (!name) {
-                errorMessage.textContent = 'Please enter a name';
-                errorMessage.style.display = 'block';
+                alert('Please enter a name');
                 return;
             }
 
-            errorMessage.style.display = 'none';
-
-            try {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            canvas.toBlob(blob => {
                 const formData = new FormData();
                 formData.append('user_name', name);
                 formData.append('capturedPhoto', blob, `${name}.png`);
 
-                const response = await fetch('/', {
+                fetch('/', {
                     method: 'POST',
                     body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Upload failed');
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
+                })
+                .then(response => response.text())
+                .then(result => {
                     namePopup.style.display = 'none';
                     nameInput.value = '';
-                    capturedImage.style.display = 'none';
-                    video.style.display = 'block';
-                    thankYouMessage.style.display = 'block';
-                    setTimeout(() => {
-                        thankYouMessage.style.display = 'none';
-                    }, 2000);
-                } else {
-                    throw new Error(result.error || 'Upload failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
-            }
+                    alert('Photo saved successfully!');
+                })
+                .catch(error => alert('Error saving photo: ' + error));
+            }, 'image/png');
         });
     </script>
 </body>
