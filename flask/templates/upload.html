@@ -3,261 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsive Camera UI</title>
+    <title>Smart Mirror</title>
+
+    <!-- Updated Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-        }
-        body {
             font-family: Arial, sans-serif;
+        }
+
+        body {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #f4f4f4;
-            height: 90%;
+            background: #f5f5f5;
+            flex-direction: column;
         }
-        .camera-container {
-            display: flex;
-            width: 90%;
-            max-width: 1200px;
-            background-color: white;
-            border-radius: 30px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            margin-top: 60px;
+            margin-bottom: 20px;
+        }
+
+        .camera-view {
+            width: 100%;
+            height: 65vh;
+            background: #000;
+            position: relative;
             overflow: hidden;
         }
-        @media (max-width: 768px) {
-            .camera-container {
-                flex-direction: column;
-                max-width: 400px;
-            }
-        }
-        .camera-view {
-            flex: 1;
-            background-color: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            min-height: 480px;
-        }
-        #video, #captured-image {
+
+        video {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 12px 12px 0 0;
         }
-        .controls {
+
+        /* Capture Button */
+        #capture-btn {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white;
+            border: 5px solid #007bff;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 20; /* Ensures it's above the video */
+        }
+
+        #capture-btn:hover {
+            background: #007bff;
+            border-color: white;
+        }
+
+        /* Button Group (Icons) */
+        .button-group {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            width: 220px;
+            z-index: 10;
+        }
+
+        .button-group button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #007bff;
+            border: 3px solid #007bff;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            z-index: 10;
         }
-        #capture-btn {
-            width: 80px;
-            height: 80px;
-            background-color: white;
-            border: 6px solid #333;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 20px;
+
+        .button-group button:hover {
+            background: #0056b3;
+            border-color: white;
         }
-        #capture-btn:hover {
-            background-color: #f0f0f0;
-            transform: scale(1.05);
+
+        .button-group button i {
+            font-size: 20px;
         }
-        #capture-btn:active {
-            transform: scale(0.95);
+
+        @media (max-width: 600px) {
+            .container {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .camera-view {
+                height: 50vh;
+            }
+
+            .button-group {
+                bottom: 10px;
+                width: 180px;
+            }
+
+            .button-group button {
+                width: 45px;
+                height: 45px;
+            }
         }
-        #name-popup {
-            display: none;
+
+        /* Popup Styling */
+        .popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s;
         }
+
+        .popup.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
         .popup-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            width: 300px;
-        }
-        #name-input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        #save-name {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #thank-you-message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 1000;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
-        .error-message {
-            color: red;
-            margin-top: 10px;
+
+        .popup-content h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .popup-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .popup-content button {
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .popup-content button:hover {
+            background: #0056b3;
+        }
+
+        .success-message {
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            margin-top: 20px;
+            border-radius: 5px;
             display: none;
         }
     </style>
 </head>
 <body>
-    <div class="camera-container">
-        <div class="camera-view">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas" style="display: none;"></canvas>
-            <img id="captured-image" style="display:none;">
+
+<div class="container">
+    <div class="camera-view">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+
+        <div class="button-group">
+            <button id="select-image-btn" title="Select Image">
+                <i class="fas fa-image"></i>
+            </button>
+            <button id="switch-camera-btn" title="Switch Camera">
+                <i class="fas fa-sync-alt"></i>
+            </button>
         </div>
-        <div class="controls">
-            <div id="capture-btn"></div>
-        </div>
+
+        <div id="capture-btn"></div>
     </div>
+</div>
 
-    <div id="name-popup">
-        <div class="popup-content">
-            <h2>Enter Name</h2>
-            <input type="text" id="name-input" placeholder="Enter person's name">
-            <button id="save-name">Save</button>
-            <div id="error-message" class="error-message"></div>
-        </div>
+<div id="name-popup" class="popup">
+    <div class="popup-content">
+        <h2>Enter Your Name</h2>
+        <input type="text" id="name-input" placeholder="Your Name">
+        <button id="save-name">Save & Upload</button>
     </div>
+</div>
 
-    <div id="thank-you-message">
-        <h2>Thank You!</h2>
-        <p>Your image has been saved.</p>
-    </div>
+<!-- Hidden File Input -->
+<input type="file" id="file-input" accept="image/*" style="display: none;">
 
-    <script>
-       const video = document.getElementById('video');
-const captureBtn = document.getElementById('capture-btn');
-const canvas = document.getElementById('canvas');
-const capturedImage = document.getElementById('captured-image');
-const namePopup = document.getElementById('name-popup');
-const nameInput = document.getElementById('name-input');
-const saveNameBtn = document.getElementById('save-name');
-const thankYouMessage = document.getElementById('thank-you-message');
-const errorMessage = document.getElementById('error-message');
+<!-- Success Message -->
+<div id="success-message" class="success-message"></div>
 
-// Function to check and request camera permissions
-async function requestCameraPermission() {
-    if (location.protocol !== 'https:') {
-        alert('Camera access requires HTTPS. Please use the Ngrok HTTPS URL.');
-        return;
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const namePopup = document.getElementById('name-popup');
+    const nameInput = document.getElementById('name-input');
+    const saveNameBtn = document.getElementById('save-name');
+    const switchCameraBtn = document.getElementById('switch-camera-btn');
+    const selectImageBtn = document.getElementById('select-image-btn');
+    const fileInput = document.getElementById('file-input');
+    const successMessageDiv = document.getElementById('success-message');
+
+    let currentStream;
+
+    function startCamera(facingMode = 'environment') {
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode }
+        })
+        .then(stream => {
+            currentStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(err => alert('Please enable camera access'));
     }
 
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-    } catch (error) {
-        console.error('Camera access denied:', error);
-        alert('Camera access denied. Please allow permissions in your browser settings.');
-    }
-}
+    startCamera();
 
-window.addEventListener('load', requestCameraPermission);
+    switchCameraBtn.onclick = () => {
+        const newFacingMode = video.srcObject.getVideoTracks()[0].getSettings().facingMode === 'environment' ? 'user' : 'environment';
+        currentStream.getTracks().forEach(track => track.stop());
+        startCamera(newFacingMode);
+    };
 
-}
+    selectImageBtn.onclick = () => {
+        fileInput.click();
+    };
 
-// Initialize camera
-async function initCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
-        });
-        video.srcObject = stream;
-    } catch (error) {
-        console.error('Error accessing camera:', error);
-        errorMessage.textContent = 'Unable to access camera. Please check permissions.';
-        errorMessage.style.display = 'block';
-    }
-}
+    fileInput.onchange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            namePopup.classList.add('show'); // Show name popup
+            fileInput.files = null; // Clear the input for future selects
+            // When the user clicks "Save & Upload", the image will be uploaded
+            saveNameBtn.onclick = () => {
+                const formData = new FormData();
+                formData.append('capturedPhoto', file);
+                formData.append('user_name', nameInput.value);
 
-// Start camera on page load
-window.addEventListener('load', requestCameraPermission);
+                uploadImage(formData);
+            };
+        }
+    };
 
-// Capture image
-captureBtn.addEventListener('click', () => {
-    const context = canvas.getContext('2d');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    capturedImage.src = canvas.toDataURL('image/png');
-    video.style.display = 'none';
-    capturedImage.style.display = 'block';
-    namePopup.style.display = 'flex';
-});
+    captureBtn.onclick = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        namePopup.classList.add('show');
+    };
 
-// Save name and upload image
-saveNameBtn.addEventListener('click', async () => {
-    const name = nameInput.value.trim();
-    if (!name) {
-        errorMessage.textContent = 'Please enter a name';
-        errorMessage.style.display = 'block';
-        return;
-    }
+    saveNameBtn.onclick = () => {
+        canvas.toBlob((blob) => {
+            const formData = new FormData();
+            formData.append('capturedPhoto', blob, 'captured.png');
+            formData.append('user_name', nameInput.value);
 
-    errorMessage.style.display = 'none';
+            uploadImage(formData);
+        }, 'image/png');
+    };
 
-    try {
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        const formData = new FormData();
-        formData.append('user_name', name);
-        formData.append('capturedPhoto', blob, `${name}.png`);
-
-        const response = await fetch('/', {
+    function uploadImage(formData) {
+        fetch('/', {
             method: 'POST',
             body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error('Upload failed');
-        }
-
-        const result = await response.json();
-
-        if (result.success) {
-            namePopup.style.display = 'none';
-            nameInput.value = '';
-            capturedImage.style.display = 'none';
-            video.style.display = 'block';
-            thankYouMessage.style.display = 'block';
-            setTimeout(() => {
-                thankYouMessage.style.display = 'none';
-            }, 2000);
-        } else {
-            throw new Error(result.error || 'Upload failed');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+        })
+        .then(response => response.json())
+        .then(data => {
+            successMessageDiv.innerHTML = data.message;
+            successMessageDiv.style.display = 'block'; // Show success message
+            namePopup.classList.remove('show'); // Close popup
+        })
+        .catch(error => console.error('Upload error:', error));
     }
-});
+</script>
 
-    </script>
 </body>
 </html>
