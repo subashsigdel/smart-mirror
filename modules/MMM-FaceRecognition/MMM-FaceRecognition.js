@@ -41,7 +41,7 @@ Module.register("MMM-FaceRecognition", {
             this.runFaceRecognitionScript(); // Call the function to run the face recognition script
             this.hideMirror();
         }
-        if (event.key === "o") { // If "s" is pressed
+        if (event.key === "o") { // If "o" is pressed
             this.runobjectdetectionScript(); // Call the function to run the face recognition script
             this.hideMirror();
         }
