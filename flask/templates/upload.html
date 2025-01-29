@@ -152,103 +152,109 @@
     </div>
 
     <script>
-        const video = document.getElementById('video');
-        const captureBtn = document.getElementById('capture-btn');
-        const canvas = document.getElementById('canvas');
-        const capturedImage = document.getElementById('captured-image');
-        const namePopup = document.getElementById('name-popup');
-        const nameInput = document.getElementById('name-input');
-        const saveNameBtn = document.getElementById('save-name');
-        const thankYouMessage = document.getElementById('thank-you-message');
-        const errorMessage = document.getElementById('error-message');
+       const video = document.getElementById('video');
+const captureBtn = document.getElementById('capture-btn');
+const canvas = document.getElementById('canvas');
+const capturedImage = document.getElementById('captured-image');
+const namePopup = document.getElementById('name-popup');
+const nameInput = document.getElementById('name-input');
+const saveNameBtn = document.getElementById('save-name');
+const thankYouMessage = document.getElementById('thank-you-message');
+const errorMessage = document.getElementById('error-message');
 
-        // Initialize camera with both front and back camera options
-        async function initCamera() {
-            try {
-                // Try rear camera first
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { ideal: 'environment' },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                });
-                video.srcObject = stream;
-            } catch (error) {
-                console.error('Rear camera error:', error);
-                try {
-                    // Fall back to any available camera
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                        video: true
-                    });
-                    video.srcObject = stream;
-                } catch (fallbackError) {
-                    console.error('Camera access error:', fallbackError);
-                    errorMessage.textContent = 'Camera access denied. Please check permissions.';
-                    errorMessage.style.display = 'block';
-                }
-            }
+// Function to check and request camera permissions
+async function requestCameraPermission() {
+    try {
+        const permissions = await navigator.permissions.query({ name: 'camera' });
+
+        if (permissions.state === 'denied') {
+            throw new Error('Camera access is denied. Please enable permissions in browser settings.');
         }
 
-        // Start camera when page loads
-        window.addEventListener('load', initCamera);
+        await initCamera(); // If permission is granted, start the camera
+    } catch (error) {
+        console.error(error);
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+    }
+}
 
-        captureBtn.addEventListener('click', () => {
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            capturedImage.src = canvas.toDataURL('image/png');
-            video.style.display = 'none';
-            capturedImage.style.display = 'block';
-            namePopup.style.display = 'flex';
+// Initialize camera
+async function initCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = stream;
+    } catch (error) {
+        console.error('Error accessing camera:', error);
+        errorMessage.textContent = 'Unable to access camera. Please check permissions.';
+        errorMessage.style.display = 'block';
+    }
+}
+
+// Start camera on page load
+window.addEventListener('load', requestCameraPermission);
+
+// Capture image
+captureBtn.addEventListener('click', () => {
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    capturedImage.src = canvas.toDataURL('image/png');
+    video.style.display = 'none';
+    capturedImage.style.display = 'block';
+    namePopup.style.display = 'flex';
+});
+
+// Save name and upload image
+saveNameBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+        errorMessage.textContent = 'Please enter a name';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    errorMessage.style.display = 'none';
+
+    try {
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        const formData = new FormData();
+        formData.append('user_name', name);
+        formData.append('capturedPhoto', blob, `${name}.png`);
+
+        const response = await fetch('/', {
+            method: 'POST',
+            body: formData
         });
 
-        saveNameBtn.addEventListener('click', async () => {
-            const name = nameInput.value.trim();
-            if (!name) {
-                errorMessage.textContent = 'Please enter a name';
-                errorMessage.style.display = 'block';
-                return;
-            }
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
 
-            errorMessage.style.display = 'none';
+        const result = await response.json();
 
-            try {
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-                const formData = new FormData();
-                formData.append('user_name', name);
-                formData.append('capturedPhoto', blob, `${name}.png`);
+        if (result.success) {
+            namePopup.style.display = 'none';
+            nameInput.value = '';
+            capturedImage.style.display = 'none';
+            video.style.display = 'block';
+            thankYouMessage.style.display = 'block';
+            setTimeout(() => {
+                thankYouMessage.style.display = 'none';
+            }, 2000);
+        } else {
+            throw new Error(result.error || 'Upload failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        errorMessage.textContent = error.message;
+        errorMessage.style.display = 'block';
+    }
+});
 
-                const response = await fetch('/', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error('Upload failed');
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    namePopup.style.display = 'none';
-                    nameInput.value = '';
-                    capturedImage.style.display = 'none';
-                    video.style.display = 'block';
-                    thankYouMessage.style.display = 'block';
-                    setTimeout(() => {
-                        thankYouMessage.style.display = 'none';
-                    }, 2000);
-                } else {
-                    throw new Error(result.error || 'Upload failed');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                errorMessage.textContent = error.message;
-                errorMessage.style.display = 'block';
-            }
-        });
     </script>
 </body>
 </html>
