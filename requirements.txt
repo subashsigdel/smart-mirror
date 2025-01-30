@@ -8,6 +8,30 @@ curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 	ngrok config add-authtoken 2WbQSQrfQGgkuEm1LJwXhhs2rx0_2ENA3G1oCH3xZdg7uhhYZ
 
 	ngrok http --url=mole-pretty-primarily.ngrok-free.app 80
+
+
+##hdfhd
+
+#!/bin/bash
+sleep 2
+# Activate Python virtual environment
+source /home/hitech/smart-mirror/.venv/bin/activate
+export DISPLAY=:0
+
+# Start Magic Mirror
+npm start -- --no-sandbox --prefix /home/hitech/MagicMirrornew
+
+#ngrok
+ngrok http --url=mole-pretty-primarily.ngrok-free.app 5000
+
+#flask
+cd /home/hitech/MagicMirrornew/flask
+python app.py &
+
+wait
+
+
+#####
 attrs==24.3.0
 backcall==0.2.0
 beautifulsoup4==4.12.3
