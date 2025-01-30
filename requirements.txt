@@ -8,7 +8,16 @@ curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
 	ngrok config add-authtoken 2WbQSQrfQGgkuEm1LJwXhhs2rx0_2ENA3G1oCH3xZdg7uhhYZ
 
 	ngrok http --url=mole-pretty-primarily.ngrok-free.app 80
+[Unit]
+Description=Run startup script
 
+[Service]
+ExecStart=/home/$USER/startup_script.sh
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=default.target
 
 ##hdfhd
 
