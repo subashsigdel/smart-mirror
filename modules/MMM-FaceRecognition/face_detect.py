@@ -15,7 +15,7 @@ BATCH_SIZE: int = 3
 RESET_INTERVAL: int = 3600
 STATIC_BOX_START: Tuple[int, int] = (150, 100)
 STATIC_BOX_END: Tuple[int, int] = (450, 400)
-image_folder: str = '/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/testimage'
+image_folder: str = 'testimage'
 # Load known face encodings
 known_face_encodings: List[np.ndarray]
 known_face_names: List[str]
@@ -137,6 +137,7 @@ def process_batch(
 
                     print(f"Greeting {name} took {end_greeting_time - start_greeting_time:.2f} seconds.")
                     greeted_names.add(name)
+                    append_face_encodings_to_csv(image_folder,CSV_FILENAME)
 
             draw_bounding_box(frame, face_location, name)
 

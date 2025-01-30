@@ -4,7 +4,7 @@ import time
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'testimages'
+UPLOAD_FOLDER = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -23,7 +23,7 @@ def index():
                 # If file exists, append timestamp
                 if os.path.exists(filepath):
                     timestamp = int(time.time())
-                    filename = f"{user_name}_{timestamp}.png"
+                    filename = f"{user_name}-{timestamp}.png"
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
                 file.save(filepath)
