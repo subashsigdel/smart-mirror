@@ -4,4 +4,6 @@ sleep 2
 source /home/hitech/smart-mirror/.venv/bin/activate
 export DISPLAY=:0
 # Start Magic Mirror
-npm start --prefix /home/hitech/MagicMirrornew
+npm start -- --no-sandbox --prefix /home/hitech/MagicMirrornew
+
+
