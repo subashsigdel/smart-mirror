@@ -82,7 +82,7 @@ def new_person(frame: cv2.Mat) -> None:
 
     if user_name:
         unique_id = uuid.uuid4().hex[:4]  # Generate a unique ID
-        file_path = f"/home/subash/vs/magicmirror/old/modules/MMM-FaceRecognition/testimage/{user_name}-{unique_id}.png"
+        file_path = f"testimage/{user_name}-{unique_id}.png"
         cv2.imwrite(file_path, frame)  # Save the image
         print(f"Image saved as {file_path}")
     else:
