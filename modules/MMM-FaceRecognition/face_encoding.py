@@ -4,16 +4,25 @@ import face_recognition
 import numpy as np
 from typing import List, Tuple
 
+import os
+import csv
+import face_recognition
+from typing import List
 
-def append_face_encodings_to_csv(image_folder: str, csv_filename: str) -> None:
+def append_face_encodings_to_csv(image_folder: str, csv_filename: str, processed_folder: str) -> None:
     """
-    Append new face encodings from images in a folder to a CSV file.
+    Append new face encodings from images in a folder to a CSV file and move processed images to another folder.
 
     Args:
         image_folder (str): Path to the folder containing images.
         csv_filename (str): Path to the CSV file to store face encodings.
+        processed_folder (str): Path to the folder where processed images will be moved.
     """
     face_data: List[List] = []
+
+    # Create the processed folder if it doesn't exist
+    if not os.path.exists(processed_folder):
+        os.makedirs(processed_folder)
 
     existing_names: set = set()
     if os.path.exists(csv_filename):
@@ -42,6 +51,11 @@ def append_face_encodings_to_csv(image_folder: str, csv_filename: str) -> None:
 
                 face_data.append([person_name] + face_encoding.tolist())
                 print(f"Encoded and added {person_name}")
+
+                # Move the processed image to the processed folder
+                new_image_path = os.path.join(processed_folder, filename)
+                os.rename(image_path, new_image_path)
+                print(f"Moved {filename} to {processed_folder}")
 
     if face_data:
         with open(csv_filename, mode="a", newline="") as file:

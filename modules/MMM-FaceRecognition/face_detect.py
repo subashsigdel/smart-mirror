@@ -10,16 +10,19 @@ from face_encoding import append_face_encodings_to_csv,load_face_encodings_from_
 # from new_person import new_person
 
 # Constants
-CSV_FILENAME: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/facedetails.csv'
+# CSV_FILENAME: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/facedetails.csv'
+CSV_FILENAME: str = 'facedetails.csv'
 BATCH_SIZE: int = 3
 RESET_INTERVAL: int = 3600
 STATIC_BOX_START: Tuple[int, int] = (150, 100)
 STATIC_BOX_END: Tuple[int, int] = (450, 400)
-image_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
+# image_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
+image_folder: str = 'testimage'
+processed_folder: str = 'processed_folder'
 # Load known face encodings
 known_face_encodings: List[np.ndarray]
 known_face_names: List[str]
-append_face_encodings_to_csv(image_folder,CSV_FILENAME)
+append_face_encodings_to_csv(image_folder,CSV_FILENAME, processed_folder=processed_folder)
 known_face_encodings, known_face_names = load_face_encodings_from_csv(CSV_FILENAME)
 
 def greet_person(name: str) -> None:
@@ -89,6 +92,8 @@ def draw_bounding_box(frame: np.ndarray, face_location: Tuple[int, int, int, int
 #             draw_bounding_box(frame, face_location, name)
 import time  # Ensure this is imported at the top of your file
 
+CONFIDENCE_THRESHOLD = 0.5  # Adjust threshold based on testing
+
 def process_batch(
     frames: List[np.ndarray],
     greeted_names: Set[str],
@@ -112,23 +117,26 @@ def process_batch(
             face_distances: np.ndarray = face_recognition.face_distance(known_face_encodings, face_encoding)
 
             name: str = "Unknown"
+            confidence: float = 0.0
+
             if matches:
                 best_match_index: int = np.argmin(face_distances)
-                if matches[best_match_index]:
+                confidence = 1 - face_distances[best_match_index]  # Convert distance to confidence score
+
+                if matches[best_match_index] and confidence > CONFIDENCE_THRESHOLD:
                     name = known_face_names[best_match_index]
 
             # End timing face recognition
             end_recognition_time = time.time()
-            print(f"Face recognition for {name} took {end_recognition_time - start_recognition_time:.2f} seconds.")
+            print(f"Face recognition for {name} took {end_recognition_time - start_recognition_time:.2f} seconds. Confidence: {confidence:.2f}")
 
             # Check bounding box and greet logic
             if (STATIC_BOX_START[0] < face_location[3] < STATIC_BOX_END[0] and
                     STATIC_BOX_START[1] < face_location[0] < STATIC_BOX_END[1]):
 
                 if name == "Unknown":
-                    append_face_encodings_to_csv(image_folder,CSV_FILENAME)
+                    append_face_encodings_to_csv(image_folder, CSV_FILENAME, processed_folder)
                     pass
-
 
                 elif name not in greeted_names:
                     # Start timing greeting
@@ -139,7 +147,7 @@ def process_batch(
                     print(f"Greeting {name} took {end_greeting_time - start_greeting_time:.2f} seconds.")
                     greeted_names.add(name)
 
-            draw_bounding_box(frame, face_location, name)
+            draw_bounding_box(frame, face_location, f"{name} ({confidence:.2f})")
 
 
 def main() -> None:
