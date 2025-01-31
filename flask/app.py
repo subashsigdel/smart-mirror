@@ -4,7 +4,7 @@ import time
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = 'testimages'
+UPLOAD_FOLDER = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
