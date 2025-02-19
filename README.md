@@ -1,17 +1,3 @@
-<a href="{{ url }}"
-   class="newsfeed-title"
-   target="_blank">{{ title }}</a>
-
-   .newsfeed-title {
-  color: #ff5722; /* Custom color */
-  text-decoration: none; /* No underline */
-  font-weight: bold; /* Bold font */
-  font-size: 1.2rem; /* Slightly larger text */
-  transition: color 0.3s ease; /* Smooth color change on hover */
-}
-
-
-####
 Module.register("newsfeed", {
 	// Default module config.
 	defaults: {
@@ -156,7 +142,7 @@ Module.register("newsfeed", {
 		const items = this.newsItems.map(function (item) {
 			return {
 				...item,
-				prefixedTitle: `<span class="news-title-prefix">B N </span>${item.title}`,
+				prefixedTitle: `<span class="news-title-prefix">Brk News </span>${item.title}`,
 				publishDate: moment(new Date(item.pubdate)).fromNow()
 			};
 		});
@@ -167,7 +153,7 @@ Module.register("newsfeed", {
 			url: this.getActiveItemURL(),
 			sourceTitle: item?.sourceTitle,
 			publishDate: moment(new Date(item?.pubdate)).fromNow(),
-			title: `<span class="news-title-prefix">BN: </span>${item?.title}`, // Current active item with prefix
+			title: `<span class="news-title-prefix">Brk News: </span>${item?.title}`, // Current active item with prefix
 			description: item?.description,
 			items: items // List of all news items with prefixed titles
 		};
@@ -444,133 +430,3 @@ Module.register("newsfeed", {
 		this.updateDom(100);
 	}
 });
-
-######
-
-
-iframe.newsfeed-fullarticle {
-  width: 100vw;
-
-  /* very large height value to allow scrolling */
-  height: 3000px;
-  top: 0;
-  left: 0;
-  border: none;
-  z-index: 1;
-}
-
-.region.bottom.bar.newsfeed-fullarticle {
-  bottom: inherit;
-  top: -90px;
-}
-
-.newsfeed-list {
-  list-style: none;
-}
-
-.newsfeed-list li {
-  text-align: justify;
-  margin-bottom: 0.5em;
-}
-.newsfeed .medium {
-  color: rgb(255, 255, 255);
-  font-size: 30px;
-  line-height: 30px;
-  font-weight: 40px;
-  font-family: 'Times New Roman', Times, serif;
-}
-
-.news-title-prefix {
-  color: red;
-  font-weight: bold;
-}
-
-#####
-
-{% macro escapeText(text, dangerouslyDisableAutoEscaping=false) %}
-    {% if dangerouslyDisableAutoEscaping -%}
-        {{ text | safe }}
-    {%- else -%}
-        {{ text }}
-    {%- endif %}
-{% endmacro %}
-{% macro escapeTitle(prefixedTitle, url, dangerouslyDisableAutoEscaping=false, showTitleAsUrl=false) %}
-    {% if dangerouslyDisableAutoEscaping %}
-        {% if showTitleAsUrl %}
-            <a href="{{ url }}"
-   target="_blank">{{ prefixedTitle }}</a>
-        {% else %}
-            {{ prefixedTitle | safe }}
-        {% endif %}
-    {% else %}
-        {% if showTitleAsUrl %}
-            <a href="{{ url }}"
-   target="_blank">{{ prefixedTitle | safe }}</a>
-        {% else %}
-            {{ prefixedTitle | safe }}
-        {% endif %}
-    {% endif %}
-{% endmacro %}
-{% if loaded %}
-    {% if config.showAsList %}
-        <ul class="newsfeed-list">
-            {% for item in items %}
-                <li>
-                    {% if (config.showSourceTitle and item.sourceTitle) or config.showPublishDate %}
-                        <div class="newsfeed-source light small dimmed">
-                            {% if item.sourceTitle and config.showSourceTitle %}
-                                {{ item.sourceTitle }}{% if config.showPublishDate %}, {% else %}:{% endif %}
-                            {% endif %}
-                            {% if config.showPublishDate %}{{ item.publishDate }}:{% endif %}
-                        </div>
-                    {% endif %}
-                    <div class="newsfeed-title bright medium light{{ ' no-wrap' if not config.wrapTitle }}">
-                        {{ escapeTitle(item.title, item.url, config.dangerouslyDisableAutoEscaping, config.showTitleAsUrl) }}
-                    </div>
-                    {% if config.showDescription %}
-                        <div class="newsfeed-desc small light{{ ' no-wrap' if not config.wrapDescription }}">
-                            {% if config.truncDescription %}
-                                {{ escapeText(item.description | truncate(config.lengthDescription) , config.dangerouslyDisableAutoEscaping) }}
-                            {% else %}
-                                {{ escapeText(item.description, config.dangerouslyDisableAutoEscaping) }}
-                            {% endif %}
-                        </div>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <div>
-            {% if (config.showSourceTitle and sourceTitle) or config.showPublishDate %}
-                <div class="newsfeed-source light small dimmed">
-                    {% if sourceTitle and config.showSourceTitle %}
-                        {{ escapeText(sourceTitle, config.dangerouslyDisableAutoEscaping) }}{% if config.showPublishDate %}, {% else %}:{% endif %}
-                    {% endif %}
-                    {% if config.showPublishDate %}{{ publishDate }}:{% endif %}
-                </div>
-            {% endif %}
-            <div class="newsfeed-title bright medium light{{ ' no-wrap' if not config.wrapTitle }}">
-                {{ escapeTitle(title, url, config.dangerouslyDisableAutoEscaping, config.showTitleAsUrl) }}
-            </div>
-            {% if config.showDescription %}
-                <div class="newsfeed-desc small light{{ ' no-wrap' if not config.wrapDescription }}">
-                    {% if config.truncDescription %}
-                        {{ escapeText(description | truncate(config.lengthDescription) , config.dangerouslyDisableAutoEscaping) }}
-                    {% else %}
-                        {{ escapeText(description, config.dangerouslyDisableAutoEscaping) }}
-                    {% endif %}
-                </div>
-            {% endif %}
-        </div>
-    {% endif %}
-{% elseif empty %}
-    <div class="small dimmed">{{ "NEWSFEED_NO_ITEMS" | translate | safe }}</div>
-{% elseif error %}
-    <div class="small dimmed">
-        {{ "MODULE_CONFIG_ERROR" | translate({MODULE_NAME: "Newsfeed", ERROR: error}) | safe }}
-    </div>
-{% else %}
-    <div class="small dimmed">{{ "LOADING" | translate | safe }}</div>
-{% endif %}
-
-#####
