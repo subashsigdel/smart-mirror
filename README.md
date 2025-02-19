@@ -23,11 +23,16 @@ iframe.newsfeed-fullarticle {
   margin-bottom: 0.5em;
 }
 .newsfeed .medium {
-  color: rgb(255, 255, 255);
-  font-size: 30px;
-  line-height: 30px;
-  font-weight: 40px;
-  font-family: 'Times New Roman', Times, serif;
+font-size: 40px; /* Same as compliment text */
+    font-family: 'Arial', sans-serif; /* Or any font you prefer */
+    color: #FFFFFF; /* White text, can be adjusted based on background */
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-line; /* To preserve newlines in the text */
+    text-align: center; /* Center-align the text, or adjust as needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Optional, add a background with transparency */
+    padding: 10px; /* Adjust padding if necessary */
+    border-radius: 10px; /* Optional, adds rounded corners */
 }
 
 .news-title-prefix {
