@@ -49,9 +49,8 @@ Module.register("newsfeed", {
 		return ["moment.js"];
 	},
 
-	//Define required styles.
-	getStyles () {
-		return ["newsfeed.css"];
+	getStyles() {
+		return ["newsfeed.css", "custom-newsfeed.css"]; // Add your custom CSS file here
 	},
 
 	// Define required translations.
@@ -111,12 +110,12 @@ Module.register("newsfeed", {
 	},
 
 	//Override template data and return whats used for the current template
-	getTemplateData () {
+	getTemplateData() {
 		if (this.activeItem >= this.newsItems.length) {
 			this.activeItem = 0;
 		}
 		this.activeItemCount = this.newsItems.length;
-		// this.config.showFullArticle is a run-time configuration, triggered by optional notifications
+	
 		if (this.config.showFullArticle) {
 			this.activeItemHash = this.newsItems[this.activeItem]?.hash;
 			return {
@@ -135,26 +134,31 @@ Module.register("newsfeed", {
 				empty: true
 			};
 		}
-
+	
 		const item = this.newsItems[this.activeItem];
 		this.activeItemHash = item.hash;
-
+	
+		// Create a prefixed title dynamically without modifying the original
 		const items = this.newsItems.map(function (item) {
-			item.publishDate = moment(new Date(item.pubdate)).fromNow();
-			return item;
+			return {
+				...item,
+				prefixedTitle: `<span class="news-title-prefix">Brk News </span>${item.title}`,
+				publishDate: moment(new Date(item.pubdate)).fromNow()
+			};
 		});
-
+	
 		return {
 			loaded: true,
 			config: this.config,
-			sourceTitle: item.sourceTitle,
-			publishDate: moment(new Date(item.pubdate)).fromNow(),
-			title: item.title,
 			url: this.getActiveItemURL(),
-			description: item.description,
-			items: items
+			sourceTitle: item?.sourceTitle,
+			publishDate: moment(new Date(item?.pubdate)).fromNow(),
+			title: `<span class="news-title-prefix">Brk News: </span>${item?.title}`, // Current active item with prefix
+			description: item?.description,
+			items: items // List of all news items with prefixed titles
 		};
 	},
+	
 
 	getActiveItemURL () {
 		const item = this.newsItems[this.activeItem];

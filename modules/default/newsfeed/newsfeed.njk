@@ -5,24 +5,20 @@
         {{ text }}
     {%- endif %}
 {% endmacro %}
-{% macro escapeTitle(title, url, dangerouslyDisableAutoEscaping=false, showTitleAsUrl=false) %}
+{% macro escapeTitle(prefixedTitle, url, dangerouslyDisableAutoEscaping=false, showTitleAsUrl=false) %}
     {% if dangerouslyDisableAutoEscaping %}
         {% if showTitleAsUrl %}
             <a href="{{ url }}"
-               style="text-decoration:none;
-                      color:#ffffff"
-               target="_blank">{{ title | safe }}</a>
+   target="_blank">{{ prefixedTitle }}</a>
         {% else %}
-            {{ title | safe }}
+            {{ prefixedTitle | safe }}
         {% endif %}
     {% else %}
         {% if showTitleAsUrl %}
             <a href="{{ url }}"
-               style="text-decoration:none;
-                      color:#ffffff"
-               target="_blank">{{ title }}</a>
+   target="_blank">{{ prefixedTitle | safe }}</a>
         {% else %}
-            {{ title }}
+            {{ prefixedTitle | safe }}
         {% endif %}
     {% endif %}
 {% endmacro %}

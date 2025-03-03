@@ -11,14 +11,14 @@ from face_encoding import append_face_encodings_to_csv,load_face_encodings_from_
 
 # Constants
 # CSV_FILENAME: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/facedetails.csv'
-CSV_FILENAME: str = 'facedetails.csv'
+CSV_FILENAME: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/facedetails.csv'
 BATCH_SIZE: int = 3
 RESET_INTERVAL: int = 3600
 STATIC_BOX_START: Tuple[int, int] = (150, 100)
 STATIC_BOX_END: Tuple[int, int] = (450, 400)
 # image_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
-image_folder: str = 'testimage'
-processed_folder: str = 'processed_folder'
+image_folder: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/testimage'
+processed_folder: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/processed_folder'
 # Load known face encodings
 known_face_encodings: List[np.ndarray]
 known_face_names: List[str]
