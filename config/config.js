@@ -101,6 +101,7 @@ let config = {
 				broadcastNewsFeeds: true,
 				broadcastNewsUpdates: true
 			}
+
 		},
 		{
 			module: "MMM-FaceRecognition",
@@ -120,7 +121,14 @@ let config = {
 			},
 		  },
 
+
+
+		  
+
+		  
+
 	]
+
 };
 
 /*************** DO NOT EDIT THE LINE BELOW ***************/
