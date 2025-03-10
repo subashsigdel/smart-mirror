@@ -1,5 +1,7 @@
-import pyttsx3
+import time
+import pygame
 import feedparser
+from gtts import gTTS
 
 # Function to fetch news from the New York Times RSS feed
 def get_nyt_news():
@@ -13,13 +15,38 @@ def get_nyt_news():
     
     return headlines
 
-# Function to speak the news headlines
+# Function to speak the news headlines using gTTS
 def speak_news(news):
-    engine = pyttsx3.init()
-    for headline in news:
-        print(f"Breaking News: {headline}")
-        engine.say(f"Breaking news: {headline}")
-    engine.runAndWait()
+    audio_file = "output.mp3"
+    try:
+        # Start timing text-to-speech
+        start_tts_time = time.time()
+
+        # Initialize pygame mixer
+        pygame.mixer.init()
+
+        # Loop through the news headlines and generate speech
+        for headline in news:
+            print(f"Breaking News: {headline}")
+
+            # Generate the speech file for each headline
+            tts = gTTS(text=f"Breaking news: {headline}", lang='en', slow=False)
+            tts.save(audio_file)
+
+            # Load and play the audio file asynchronously
+            pygame.mixer.music.load(audio_file)
+            pygame.mixer.music.play()
+
+            # Wait until the audio finishes playing
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.1)
+
+        # End timing for text-to-speech
+        end_tts_time = time.time()
+        print(f"Text-to-speech took {end_tts_time - start_tts_time:.2f} seconds.")
+
+    except Exception as e:
+        print(f"Error during text-to-speech: {e}")
 
 # Get and speak the New York Times breaking news
 news = get_nyt_news()
