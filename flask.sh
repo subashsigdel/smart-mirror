@@ -1,44 +1,29 @@
-import os
-import time
-import requests
+import pyttsx3
+import feedparser
 
-# MagicMirror NewsFeed API endpoint
-MAGICMIRROR_URL = "http://localhost:8080/api/newsfeed"
+# Function to fetch news from the New York Times RSS feed
+def get_nyt_news():
+    url = "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+    feed = feedparser.parse(url)
+    
+    # Extract titles of the first 5 news articles
+    headlines = []
+    for entry in feed.entries[:5]:  # Adjust the number to get more headlines if needed
+        headlines.append(entry.title)
+    
+    return headlines
 
-def get_latest_news():
-    try:
-        response = requests.get(MAGICMIRROR_URL)
-        news_data = response.json()
-        if news_data and "items" in news_data and len(news_data["items"]) > 0:
-            return news_data["items"][0]["title"]  # Get the first news headline
-    except Exception as e:
-        print("Error fetching news:", e)
-    return None
-
+# Function to speak the news headlines
 def speak_news(news):
-    if news:
-        print("Speaking:", news)
-        os.system(f'espeak "{news}" --stdout | aplay')
+    engine = pyttsx3.init()
+    for headline in news:
+        print(f"Breaking News: {headline}")
+        engine.say(f"Breaking news: {headline}")
+    engine.runAndWait()
 
-if __name__ == "__main__":
-    spoken_news = None  # Store already spoken news
-
-    while True:
-        latest_news = get_latest_news()
-        if latest_news and latest_news != spoken_news:
-            speak_news(latest_news)
-            spoken_news = latest_news  # Update spoken news
-
-        time.sleep(600)  # Wait 10 minutes before checking again
-
-
-
-import requests
-
-url = "http://localhost:8080/api/newsfeed"
-
-try:
-    response = requests.get(url)
-    print(response.json())
-except Exception as e:
-    print("Error fetching news:", e)
+# Get and speak the New York Times breaking news
+news = get_nyt_news()
+if news:
+    speak_news(news)
+else:
+    print("No news to speak.")
