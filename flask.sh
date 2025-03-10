@@ -30,3 +30,15 @@ if __name__ == "__main__":
             spoken_news = latest_news  # Update spoken news
 
         time.sleep(600)  # Wait 10 minutes before checking again
+
+
+
+import requests
+
+url = "http://localhost:8080/api/newsfeed"
+
+try:
+    response = requests.get(url)
+    print(response.json())
+except Exception as e:
+    print("Error fetching news:", e)
