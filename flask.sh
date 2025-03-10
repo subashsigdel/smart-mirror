@@ -2,6 +2,7 @@ import os
 import time
 import requests
 
+# MagicMirror NewsFeed API endpoint
 MAGICMIRROR_URL = "http://localhost:8080/api/newsfeed"
 
 def get_latest_news():
@@ -20,11 +21,12 @@ def speak_news(news):
         os.system(f'espeak "{news}" --stdout | aplay')
 
 if __name__ == "__main__":
-    spoken_news = None  # To keep track of already spoken news
+    spoken_news = None  # Store already spoken news
+
     while True:
         latest_news = get_latest_news()
         if latest_news and latest_news != spoken_news:
             speak_news(latest_news)
-            spoken_news = latest_news  # Store spoken news
+            spoken_news = latest_news  # Update spoken news
 
         time.sleep(600)  # Wait 10 minutes before checking again
