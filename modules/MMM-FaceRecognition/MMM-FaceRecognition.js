@@ -45,6 +45,10 @@ Module.register("MMM-FaceRecognition", {
             this.runobjectdetectionScript(); // Call the function to run the face recognition script
             this.hideMirror();
         }
+        if (event.key === "b") { // If "b" is pressed
+            this.runreadnewsScript(); // Call the function to run the face recognition script
+            this.hideMirror();
+        }
     },
 
     runFaceRecognitionScript: function() {
@@ -60,6 +64,13 @@ Module.register("MMM-FaceRecognition", {
 
         // Send a notification to the Node helper to run the Python script
         this.sendSocketNotification('RUN_SCRIPT2');
+    },
+    runreadnewsScript: function() {
+        // Hide the MagicMirror screen
+        this.hideMirror();
+
+        // Send a notification to the Node helper to run the Python script
+        this.sendSocketNotification('RUN_SCRIPT3');
     },
 
 

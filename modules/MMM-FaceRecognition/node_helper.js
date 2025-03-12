@@ -13,6 +13,9 @@ module.exports = NodeHelper.create({
     if (notification === 'RUN_SCRIPT2') {
       this.runPythonScript2();
     }
+    if (notification === 'RUN_SCRIPT3') {
+      this.runPythonScript3();
+    }
     
   },
   
@@ -37,6 +40,24 @@ module.exports = NodeHelper.create({
   },
   runPythonScript2: function() {
     const command = "python3 modules/MMM-FaceRecognition/ObjectDetection/main.py"; // Replace with your script path
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Error executing script: ${error}`);
+        return;
+      }
+
+      console.log(`Script output: ${stdout}`);
+      if (stderr) {
+        console.error(`Script error output: ${stderr}`);
+      }
+
+      // Notify the module that the script has completed
+      this.sendSocketNotification('SCRIPT_COMPLETED');
+    });
+  },
+  runPythonScript3: function() {
+    const command = "python3 modules/youtube_slideshow/speak_news.py"; // Replace with your script path
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
