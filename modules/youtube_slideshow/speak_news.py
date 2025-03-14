@@ -1,30 +1,51 @@
-import os
 import time
-import requests
+import pygame
+import feedparser
+from gtts import gTTS
 
-MAGICMIRROR_URL = "http://localhost:8080/api/newsfeed"
+# RSS Feed URL from Magic Mirror config
+RSS_URL = "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
 
-def get_latest_news():
+# Function to fetch news from RSS
+def get_nyt_news():
     try:
-        response = requests.get(MAGICMIRROR_URL)
-        news_data = response.json()
-        if news_data and "items" in news_data and len(news_data["items"]) > 0:
-            return news_data["items"][0]["title"]  # Get the first news headline
+        feed = feedparser.parse(RSS_URL)
+        if not feed.entries:
+            print("No news found.")
+            return []
+        
+        return [entry.title for entry in feed.entries[:5]]  # Fetch top 5 headlines
+    
     except Exception as e:
-        print("Error fetching news:", e)
-    return None
+        print(f"Error fetching news: {e}")
+        return []
 
+# Function to speak the news
 def speak_news(news):
-    if news:
-        print("Speaking:", news)
-        os.system(f'espeak "{news}" --stdout | aplay')
+    audio_file = "breakingnews.mp3"
+    try:
+        pygame.mixer.init()
+        for headline in news:
+            print(f"Breaking News: {headline}")
 
-if __name__ == "__main__":
-    spoken_news = None  # To keep track of already spoken news
-    while True:
-        latest_news = get_latest_news()
-        if latest_news and latest_news != spoken_news:
-            speak_news(latest_news)
-            spoken_news = latest_news  # Store spoken news
+            # Convert text to speech and save as MP3
+            tts = gTTS(text=f"Breaking news: {headline}", lang='en', slow=False)
+            tts.save(audio_file)
 
-        time.sleep(600)  # Wait 10 minutes before checking again
+            # Play the audio file
+            pygame.mixer.music.load(audio_file)
+            pygame.mixer.music.play()
+
+            # Wait until the audio finishes playing
+            while pygame.mixer.music.get_busy():
+                time.sleep(0.1)
+
+    except Exception as e:
+        print(f"Error during text-to-speech: {e}")
+
+# Fetch and speak the news
+news = get_nyt_news()
+if news:
+    speak_news(news)
+else:
+    print("No news to speak.")
