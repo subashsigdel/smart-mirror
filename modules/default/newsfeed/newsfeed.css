@@ -23,16 +23,13 @@ iframe.newsfeed-fullarticle {
   margin-bottom: 0.5em;
 }
 .newsfeed .medium {
-  font-size: 40px; /* Same as compliment text */
+  font-size: 33px; /* Same as compliment text */
   font-family: 'Arial', sans-serif; /* Or any font you prefer */
   color: #FFFFFF; /* White text, can be adjusted based on background */
-  line-height: 1.5;
-  word-wrap: break-word;
-  white-space: pre-line; /* To preserve newlines in the text */
-  text-align: center; /* Center-align the text, or adjust as needed */
-  background-color: rgba(0, 0, 0, 0.5); /* Optional, add a background with transparency */
-  padding: 10px; /* Adjust padding if necessary */
+  line-height: 1;
+  /* padding: 10px; Adjust padding if necessary */
   border-radius: 10px; /* Optional, adds rounded corners */
+  font-weight: bold;
 }
 
 .news-title-prefix {

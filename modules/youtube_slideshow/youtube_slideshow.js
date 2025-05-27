@@ -1,6 +1,6 @@
 Module.register("youtube_slideshow", {
   defaults: {
-    videoIDs: ["MQ_p1qmrxPI", "_OjRClPzU6Y", "CE56q1EpArQ", "b2l5uNkIKRM"],
+    videoIDs: ["pmjXmpkSUkM","pmjXmpkSUkM","ylprvxejLFE","qQviI1d_hFA",",SBTPoLuRHcf2bltT","MQ_p1qmrxPI", "_OjRClPzU6Y", "CE56q1EpArQ", "b2l5uNkIKRM"],
     autoplay: true,
     mute: false,
   },

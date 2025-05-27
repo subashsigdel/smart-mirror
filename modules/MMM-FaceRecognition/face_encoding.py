@@ -38,7 +38,7 @@ def append_face_encodings_to_csv(image_folder: str, csv_filename: str, processed
             print(f"Processing {person_name}...")
 
             if person_name in existing_names:
-                print(f"qSkipping {person_name}, already encoded.")
+                print(f"Skipping {person_name}, already encoded.")
                 continue
 
             image_path = os.path.join(image_folder, filename)

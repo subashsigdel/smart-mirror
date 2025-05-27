@@ -81,7 +81,7 @@ def new_person(frame: cv2.Mat) -> None:
     user_name = name_input()  # Capture the name
 
     if user_name:
-        unique_id = uuid.uuid4().hex[:7]  # Generate a 7-character hexadecimal ID
+        unique_id = uuid.uuid4().hex[:4]  # Generate a unique ID
         file_path = f"testimage/{user_name}-{unique_id}.png"
         cv2.imwrite(file_path, frame)  # Save the image
         print(f"Image saved as {file_path}")

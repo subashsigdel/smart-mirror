@@ -10,15 +10,18 @@ from face_encoding import append_face_encodings_to_csv,load_face_encodings_from_
 # from new_person import new_person
 
 # Constants
-# CSV_FILENAME: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/facedetails.csv'
-CSV_FILENAME: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/facedetails.csv'
+CSV_FILENAME: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/facedetails.csv'
+# CSV_FILENAME: str = 'facedetails.csv'
 BATCH_SIZE: int = 3
-RESET_INTERVAL: int = 3600
+RESET_INTERVAL: int = 180
 STATIC_BOX_START: Tuple[int, int] = (150, 100)
 STATIC_BOX_END: Tuple[int, int] = (450, 400)
-# image_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
-image_folder: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/testimage'
-processed_folder: str = '/home/subash/vs/newsmartmirror/smart-mirror/modules/MMM-FaceRecognition/processed_folder'
+image_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/testimage'
+# image_folder: str = 'testimage'
+processed_folder: str = '/home/hitech/MagicMirrornew/modules/MMM-FaceRecognition/processed_folder'
+# processed_folder: str = 'processed_folder'
+
+
 # Load known face encodings
 known_face_encodings: List[np.ndarray]
 known_face_names: List[str]
@@ -34,7 +37,7 @@ def greet_person(name: str) -> None:
         start_tts_time = time.time()
 
         # Generate the speech file
-        tts: gTTS = gTTS(text=f"{base_name} नमस्कार!", lang='ne', tld='co.in', slow=False)
+        tts: gTTS = gTTS(text=f"{base_name} नमस्कार!", lang='en', tld='co.in', slow=False)
         tts.save(audio_file)
 
         # Initialize pygame mixer

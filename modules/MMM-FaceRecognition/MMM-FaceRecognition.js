@@ -21,6 +21,9 @@ Module.register("MMM-FaceRecognition", {
         const message2 = document.createElement("div");
         message2.textContent = "Press 'o' to run object detection.";
 
+        const message5 = document.createElement("div");
+        message5.textContent = "Press 'V' to run Vision.";
+
         const message3 = document.createElement("div");
         message3.textContent = "Press 'p' to run youtube video.";
     
@@ -31,6 +34,7 @@ Module.register("MMM-FaceRecognition", {
         wrapper.appendChild(message2);
         wrapper.appendChild(message3);
         wrapper.appendChild(message4);
+        wrapper.appendChild(message5);
     
         return wrapper;
     },
@@ -43,6 +47,10 @@ Module.register("MMM-FaceRecognition", {
         }
         if (event.key === "o") { // If "o" is pressed
             this.runobjectdetectionScript(); // Call the function to run the face recognition script
+            this.hideMirror();
+        }
+        if (event.key === "v") { // If "v" is pressed
+            this.runobjectdetectionwithvisionScript(); // Call the function to run the face recognition script
             this.hideMirror();
         }
         if (event.key === "b") { // If "b" is pressed
@@ -64,6 +72,13 @@ Module.register("MMM-FaceRecognition", {
 
         // Send a notification to the Node helper to run the Python script
         this.sendSocketNotification('RUN_SCRIPT2');
+    },
+    runobjectdetectionwithvisionScript: function() {
+        // Hide the MagicMirror screen
+        this.hideMirror();
+
+        // Send a notification to the Node helper to run the Python script
+        this.sendSocketNotification('RUN_SCRIPT4');
     },
     runreadnewsScript: function() {
         // Hide the MagicMirror screen
@@ -206,4 +221,3 @@ Module.register("MMM-FaceRecognition", {
 //         }
 //     },
 // });
-

@@ -142,7 +142,7 @@ Module.register("newsfeed", {
 		const items = this.newsItems.map(function (item) {
 			return {
 				...item,
-				prefixedTitle: `<span class="news-title-prefix">Brk News </span>${item.title}`,
+				prefixedTitle: `<span class="news-title-prefix">Breaking News </span>${item.title}`,
 				publishDate: moment(new Date(item.pubdate)).fromNow()
 			};
 		});
@@ -153,7 +153,7 @@ Module.register("newsfeed", {
 			url: this.getActiveItemURL(),
 			sourceTitle: item?.sourceTitle,
 			publishDate: moment(new Date(item?.pubdate)).fromNow(),
-			title: `<span class="news-title-prefix">Brk News: </span>${item?.title}`, // Current active item with prefix
+			title: `<span class="news-title-prefix">Breaking News: </span>${item?.title}`, // Current active item with prefix
 			description: item?.description,
 			items: items // List of all news items with prefixed titles
 		};

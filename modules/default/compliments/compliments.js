@@ -21,7 +21,7 @@ Module.register("compliments", {
 		specialDayUnique: false
 	},
 	lastIndexUsed: -1,
-	// Set currentweather from module
+	// Set currentweather from modboldule
 	currentWeatherType: "",
 	cron_regex: /^(((\d+,)+\d+|((\d+|[*])[/]\d+|((JAN|FEB|APR|MA[RY]|JU[LN]|AUG|SEP|OCT|NOV|DEC)(-(JAN|FEB|APR|MA[RY]|JU[LN]|AUG|SEP|OCT|NOV|DEC))?))|(\d+-\d+)|\d+(-\d+)?[/]\d+(-\d+)?|\d+|[*]|(MON|TUE|WED|THU|FRI|SAT|SUN)(-(MON|TUE|WED|THU|FRI|SAT|SUN))?) ?){5}$/i,
 	date_regex: "[1-9.][0-9.][0-9.]{2}-([0][1-9]|[1][0-2])-([1-2][0-9]|[0][1-9]|[3][0-1])",
@@ -215,7 +215,8 @@ Module.register("compliments", {
 	getDom () {
 		const wrapper = document.createElement("div");
 		wrapper.className = this.config.classes ? this.config.classes : "thin xlarge bright pre-line";
-		wrapper.style.fontSize = "40px"
+		wrapper.style.fontSize = "40px";
+		wrapper.style.fontWeight = "40px";
 		// get the compliment text
 		const complimentText = this.getRandomCompliment();
 		// split it into parts on newline text
